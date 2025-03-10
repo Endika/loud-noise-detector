@@ -1,0 +1,63 @@
+name: Pull Request Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Verify branch is up-to-date with main
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor origin/main HEAD || \
+            { echo "❌ ERROR: Branch is not up-to-date with main. Please merge or rebase from main before continuing."; exit 1; }
+
+          echo "✅ Branch is up-to-date with main"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r dev-requirements.txt
+          pip install -e .
+
+      - name: Run linting
+        run: |
+          flake8 src
+        continue-on-error: false
+
+      - name: Run type checking
+        run: |
+          mypy src
+        continue-on-error: false
+
+      - name: Check code formatting
+        run: |
+          make check-format
+        continue-on-error: false
+
+      - name: Run tests with coverage
+        run: |
+          pytest --cov=src --cov-report=term --cov-fail-under=80 -v
+        continue-on-error: false
+
+      - name: Check package build
+        run: |
+          python setup.py sdist bdist_wheel
+          pip install dist/*.whl
+          python -c "from src import __version__; print(__version__)"

@@ -1,0 +1,24 @@
+# Default configuration for Loud Noise Detector
+
+# Audio detection settings
+threshold: 0.015
+cooldown_seconds: 5
+seconds_to_record: 5
+pre_buffer_seconds: 2
+
+# Audio hardware settings
+rate: 44100
+channels: 1
+format: 8  # pyaudio.paInt16
+chunk_size: 1024
+
+# Application settings
+verbose: true
+timestamp_format: "%Y%m%d_%H%M%S"
+language: "en"
+keep_files: true
+
+# Notifier settings
+notifier_options:
+  slack:
+    channel: "noise" 
