@@ -1,20 +1,16 @@
-name: Semantic Release
+name: Build and Publish
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 jobs:
-  release:
+  build-and-publish:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -29,26 +25,28 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r dev-requirements.txt
+          pip install -r requirements.txt
           pip install -e .
 
-      - name: Configure Git
+      - name: Build package
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
+          python -m pip install build
+          python -m build
 
-      - name: Run Semantic Release
-        id: semantic
+      - name: Verify package
+        run: |
+          python -m pip install twine
+          twine check dist/*
+
+      - name: Publish to PyPI
+        if: success()
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TWINE_USERNAME: ${{ secrets.PYPI_API_USER }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          semantic-release publish
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          python -m pip install build twine
+          python -m build
+          python -m twine upload dist/*
 
       - name: Notify success
         if: success()
@@ -56,8 +54,8 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_RELEASES }}
           SLACK_CHANNEL: releases
-          SLACK_TITLE: New Release Published
-          SLACK_MESSAGE: "Version ${GITHUB_REF#refs/tags/} has been published to PyPI"
+          SLACK_TITLE: Package Published to PyPI
+          SLACK_MESSAGE: "Version ${{ github.event.release.tag_name }} has been published to PyPI"
           SLACK_COLOR: good
 
       - name: Notify failure
@@ -66,6 +64,6 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_RELEASES }}
           SLACK_CHANNEL: releases
-          SLACK_TITLE: Release Process Failed
-          SLACK_MESSAGE: The semantic release process failed. Please check the workflow logs for more details.
+          SLACK_TITLE: PyPI Publication Failed
+          SLACK_MESSAGE: "Failed to publish version ${{ github.event.release.tag_name }} to PyPI"
           SLACK_COLOR: danger

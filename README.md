@@ -20,7 +20,7 @@ A Python system designed to detect and record significant noises in your home wh
 ## 📋 Requirements
 
 - Python 3.6 or higher
-- PortAudio (for PyAudio)
+- PortAudio (for PyAudio) Ubuntu: `sudo apt install python3-dev portaudio19-dev`
 - Working microphone
 
 ## 🔧 Installation
