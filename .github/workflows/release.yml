@@ -42,7 +42,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          semantic-release publish
+          VERSION=$(semantic-release publish | grep -oP 'Published release \K.*' || echo "No new version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Push changes
         uses: ad-m/github-push-action@master
@@ -57,7 +58,7 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_RELEASES }}
           SLACK_CHANNEL: releases
           SLACK_TITLE: New Release Published
-          SLACK_MESSAGE: "Version ${{ github.event.release.tag_name }} has been published to PyPI"
+          SLACK_MESSAGE: "Version ${{ steps.semantic.outputs.version }} has been published to PyPI"
           SLACK_COLOR: good
 
       - name: Notify failure
