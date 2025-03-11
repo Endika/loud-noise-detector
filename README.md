@@ -103,19 +103,6 @@ cat > .env << EOL
 # Slack configuration (required for Slack notifications)
 SLACK_TOKEN=xoxb-your-token-here
 SLACK_CHANNEL=noise-alert
-
-# Optional configurations
-RECORDING_DURATION=10
-LOG_LEVEL=INFO
-
-# Audio settings (optional, override config file)
-AUDIO_THRESHOLD=0.2
-COOLDOWN_SECONDS=30
-PRE_BUFFER_SECONDS=2
-
-# Storage settings (optional)
-OUTPUT_DIR=data/recordings
-KEEP_FILES=true
 EOL
 ```
 
@@ -125,13 +112,6 @@ EOL
 | -------------------- | -------- | ----------------- | --------------------------------------------------- |
 | `SLACK_TOKEN`        | Yes      | -                 | Your Slack bot token (starts with `xoxb-`)          |
 | `SLACK_CHANNEL`      | Yes      | -                 | Channel where notifications will be sent            |
-| `RECORDING_DURATION` | No       | `10`              | Duration of recordings in seconds                   |
-| `LOG_LEVEL`          | No       | `INFO`            | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
-| `AUDIO_THRESHOLD`    | No       | `0.1`             | Override threshold in config file                   |
-| `COOLDOWN_SECONDS`   | No       | `5`               | Override cooldown in config file                    |
-| `PRE_BUFFER_SECONDS` | No       | `2`               | Override pre-buffer in config file                  |
-| `OUTPUT_DIR`         | No       | `data/recordings` | Directory for saving recordings                     |
-| `KEEP_FILES`         | No       | `true`            | Whether to keep recording files                     |
 
 > **Note**: For Slack notifications, you'll need to:
 >
