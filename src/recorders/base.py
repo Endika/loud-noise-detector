@@ -14,8 +14,8 @@ class BaseRecorder(ABC):
         timestamp: str,
         normalized_rms: float,
     ) -> Dict[str, Any]:
-        pass
+        raise NotImplementedError("Recorder must implement save")   
 
     @abstractmethod
     def remove_file(self, file_path: str, config: Config) -> bool:
-        pass
+        raise NotImplementedError("Recorder must implement remove_file")

@@ -76,9 +76,12 @@ def main() -> int:
     recorder = WaveRecorder(
         output_dir=output_dir, temporary=not config.keep_files
     )
-    notifier = SlackNotifier()
 
-    detector = AudioDetector(config, [recorder], [notifier])
+    notifiers = []
+    if slack_notifier := SlackNotifier.create_if_configured(config):
+        notifiers.append(slack_notifier)
+
+    detector = AudioDetector(config, [recorder], notifiers)
 
     try:
         detector.start()

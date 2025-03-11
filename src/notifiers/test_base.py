@@ -9,3 +9,4 @@ class TestBaseNotifier:
 
     def test_has_abstract_methods(self) -> None:
         assert hasattr(BaseNotifier, "notify")
+        assert hasattr(BaseNotifier, "create_if_configured")
