@@ -37,6 +37,7 @@ class TestMain:
         with patch("src.main.SlackNotifier") as mock_notifier_class:
             mock_notifier = MagicMock()
             mock_notifier_class.return_value = mock_notifier
+            mock_notifier_class.create_if_configured = MagicMock()
             yield mock_notifier
 
     @pytest.fixture
@@ -129,3 +130,41 @@ class TestMain:
 
                 assert result == 1
                 mock_logger.error.assert_called_once()
+
+    def test_main_with_slack_configured(
+        self,
+        mock_config: MagicMock,
+        mock_logger: MagicMock,
+        mock_recorder: MagicMock,
+        mock_notifier: MagicMock,
+        mock_detector: MagicMock,
+    ) -> None:
+        mock_notifier.create_if_configured.return_value = mock_notifier
+
+        with patch("sys.argv", ["main.py"]):
+            with patch("os.makedirs"):
+                result = main()
+
+                assert result == 0
+                mock_notifier.create_if_configured.assert_called_once_with(mock_config)
+                mock_detector.start.assert_called_once()
+                mock_detector.assert_called_once_with(mock_config, [mock_recorder], [mock_notifier])
+
+    def test_main_without_slack_configured(
+        self,
+        mock_config: MagicMock,
+        mock_logger: MagicMock,
+        mock_recorder: MagicMock,
+        mock_notifier: MagicMock,
+        mock_detector: MagicMock,
+    ) -> None:
+        mock_notifier.create_if_configured.return_value = None
+
+        with patch("sys.argv", ["main.py"]):
+            with patch("os.makedirs"):
+                result = main()
+
+                assert result == 0
+                mock_notifier.create_if_configured.assert_called_once_with(mock_config)
+                mock_detector.start.assert_called_once()
+                mock_detector.assert_called_once_with(mock_config, [mock_recorder], [])

@@ -24,7 +24,6 @@ version_variable = [
 branch = "main"
 upload_to_pypi = false
 upload_to_release = true
-build_command = "python setup.py sdist bdist_wheel"
 
 [tool.semantic_release.commit_parser_options]
 allowed_tags = [

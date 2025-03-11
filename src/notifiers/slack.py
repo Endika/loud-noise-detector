@@ -10,6 +10,23 @@ from .base import BaseNotifier
 
 class SlackNotifier(BaseNotifier):
 
+    @classmethod
+    def create_if_configured(
+        cls,
+        config: Config,
+        token: Optional[str] = None,
+        channel: Optional[str] = None
+    ) -> Optional['SlackNotifier']:
+        slack_config = config.notifier_options.get("slack", {})
+        token = token or slack_config.get("token") or os.getenv("SLACK_TOKEN")
+        channel = channel or slack_config.get("channel") or os.getenv("SLACK_CHANNEL")
+
+        if not token or not channel:
+            config.logger.warning("Slack configuration not found. Slack notifications will be disabled.")
+            return None
+
+        return cls(token=token, channel=channel)
+
     def __init__(
         self, token: Optional[str] = None, channel: Optional[str] = None
     ):
@@ -23,28 +40,6 @@ class SlackNotifier(BaseNotifier):
         normalized_rms: float,
         config: Config,
     ) -> bool:
-        slack_config = config.notifier_options.get("slack", {})
-        token = (
-            self.token or slack_config.get("token") or os.getenv("SLACK_TOKEN")
-        )
-        channel = (
-            self.channel
-            or slack_config.get("channel")
-            or os.getenv("SLACK_CHANNEL")
-        )
-
-        if not token:
-            config.logger.error(
-                "Slack token not found. Notification will not be sent."
-            )
-            return False
-
-        if not channel:
-            config.logger.error(
-                "No Slack channel specified. Notification will not be sent."
-            )
-            return False
-
         recording_path = None
         for recording in recordings:
             if "path" in recording:
@@ -63,8 +58,8 @@ class SlackNotifier(BaseNotifier):
         )
 
         url = "https://slack.com/api/files.upload"
-        headers = {"Authorization": f"Bearer {token}"}
-        data = {"channels": channel, "initial_comment": message}
+        headers = {"Authorization": f"Bearer {self.token}"}
+        data = {"channels": self.channel, "initial_comment": message}
 
         try:
             with open(recording_path, "rb") as f:

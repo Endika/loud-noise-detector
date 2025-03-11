@@ -183,3 +183,75 @@ class TestSlackNotifier:
 
                     assert result is False
                     assert cast(MagicMock, config.logger.error).call_count == 3
+
+    def test_create_if_configured_with_env_vars(self, config: Config) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "SLACK_TOKEN": "test_token",
+                "SLACK_CHANNEL": "test_channel"
+            },
+            clear=True,
+        ):
+            notifier = SlackNotifier.create_if_configured(config)
+            assert notifier is not None
+            assert notifier.token == "test_token"
+            assert notifier.channel == "test_channel"
+
+    def test_create_if_configured_with_config(self, config: Config) -> None:
+        config.notifier_options = {
+            "slack": {
+                "token": "config_token",
+                "channel": "config_channel"
+            }
+        }
+        notifier = SlackNotifier.create_if_configured(config)
+        assert notifier is not None
+        assert notifier.token == "config_token"
+        assert notifier.channel == "config_channel"
+
+    def test_create_if_configured_with_params(self, config: Config) -> None:
+        notifier = SlackNotifier.create_if_configured(
+            config,
+            token="param_token",
+            channel="param_channel"
+        )
+        assert notifier is not None
+        assert notifier.token == "param_token"
+        assert notifier.channel == "param_channel"
+
+    def test_create_if_configured_missing_token(self, config: Config) -> None:
+        with patch.dict(os.environ, {"SLACK_CHANNEL": "test_channel"}, clear=True):
+            notifier = SlackNotifier.create_if_configured(config)
+            assert notifier is None
+            assert cast(MagicMock, config.logger.warning).call_count == 1
+
+    def test_create_if_configured_missing_channel(self, config: Config) -> None:
+        with patch.dict(os.environ, {"SLACK_TOKEN": "test_token"}, clear=True):
+            notifier = SlackNotifier.create_if_configured(config)
+            assert notifier is None
+            assert cast(MagicMock, config.logger.warning).call_count == 1
+
+    def test_create_if_configured_priority(self, config: Config) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "SLACK_TOKEN": "env_token",
+                "SLACK_CHANNEL": "env_channel"
+            },
+            clear=True,
+        ):
+            config.notifier_options = {
+                "slack": {
+                    "token": "config_token",
+                    "channel": "config_channel"
+                }
+            }
+            notifier = SlackNotifier.create_if_configured(
+                config,
+                token="param_token",
+                channel="param_channel"
+            )
+            assert notifier is not None
+            assert notifier.token == "param_token"
+            assert notifier.channel == "param_channel"
