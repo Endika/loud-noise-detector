@@ -11,6 +11,8 @@ setup(
         "pyaudio>=0.2.11",
         "pyyaml>=5.1",
         "requests>=2.25.0",
+        "numpy>=2.0.2",
+        "python-dotenv>=1.0.1",
     ],
     entry_points={
         "console_scripts": [
@@ -20,10 +22,10 @@ setup(
     python_requires=">=3.6",
     author="Endika Iglesias",
     author_email="endika2@gmail.com",
-    description="A system for detecting and recording loud noises",
+    description="Audio monitoring system that detects and alerts you about important sounds in your home while you're away. Perfect for pet owners and parents who need to stay connected to their space.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    keywords="audio, detection, recording, notification",
+    keywords="AudioMonitoring, PetCare, BabyMonitor, SoundDetection, DigitalParenting, SmartSolution, audio, detection, recording, notification",
     url="https://github.com/Endika/loud-noise-detector",
     project_urls={
         "Source Code": "https://github.com/Endika/loud-noise-detector",
