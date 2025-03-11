@@ -183,11 +183,8 @@ loud-noise-detector --debug
 
 ### As a Python Module
 
-```python
-from loud_noise_detector import NoiseDetector
-
-detector = NoiseDetector()
-detector.start_monitoring()
+```shell
+python -m src.main
 ```
 
 ## 📊 Development
@@ -197,9 +194,6 @@ detector.start_monitoring()
 ```bash
 # Run all tests
 make test
-
-# Run with coverage
-make coverage
 ```
 
 ### Code Quality
@@ -209,7 +203,7 @@ make coverage
 make lint
 
 # Run type checking
-make typecheck
+make quality
 ```
 
 ## 🤝 Contributing
@@ -251,7 +245,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Endika Iglesias - endika2@gmail.com
 
 Project Link: [https://github.com/Endika/loud-noise-detector](https://github.com/Endika/loud-noise-detector)
-
-```
-
-```
