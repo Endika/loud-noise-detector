@@ -57,7 +57,7 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_RELEASES }}
           SLACK_CHANNEL: releases
           SLACK_TITLE: New Release Published
-          SLACK_MESSAGE: "Version ${GITHUB_REF#refs/tags/} has been published to PyPI"
+          SLACK_MESSAGE: "Version ${{ github.event.release.tag_name }} has been published to PyPI"
           SLACK_COLOR: good
 
       - name: Notify failure
