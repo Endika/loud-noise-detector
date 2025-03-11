@@ -5,8 +5,11 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="loud_noise_detector",
-    version="0.0.2",
+    version="0.0.3",
     packages=find_packages(),
+    package_data={
+        "src.localization": ["translations/*.json"],
+    },
     install_requires=[
         "pyaudio>=0.2.11",
         "pyyaml>=5.1",
