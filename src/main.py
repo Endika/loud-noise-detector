@@ -2,10 +2,12 @@
 import argparse
 import os
 import sys
+from typing import List
 
 from dotenv import load_dotenv
 
 from src.detector.audio_detector import AudioDetector
+from src.notifiers.base import BaseNotifier
 from src.notifiers.slack import SlackNotifier
 from src.recorders.wave_recorder import WaveRecorder
 from src.utils.config import Config
@@ -77,7 +79,7 @@ def main() -> int:
         output_dir=output_dir, temporary=not config.keep_files
     )
 
-    notifiers = []
+    notifiers: List[BaseNotifier] = []
     if slack_notifier := SlackNotifier.create_if_configured(config):
         notifiers.append(slack_notifier)
 
