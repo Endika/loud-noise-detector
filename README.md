@@ -1,6 +1,6 @@
 # Loud Noise Detector
 
-[![PyPI version](https://badge.fury.io/py/loud-noise-detector.svg)](https://badge.fury.io/py/loud-noise-detector)
+[![PyPI version](https://img.shields.io/pypi/v/loud-noise-detector.svg)](https://pypi.org/project/loud-noise-detector/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/loud-noise-detector.svg)](https://pypi.org/project/loud-noise-detector/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -108,10 +108,10 @@ EOL
 
 #### Environment Variables Description
 
-| Variable             | Required | Default           | Description                                         |
-| -------------------- | -------- | ----------------- | --------------------------------------------------- |
-| `SLACK_TOKEN`        | Yes      | -                 | Your Slack bot token (starts with `xoxb-`)          |
-| `SLACK_CHANNEL`      | Yes      | -                 | Channel where notifications will be sent            |
+| Variable        | Required | Default | Description                                |
+| --------------- | -------- | ------- | ------------------------------------------ |
+| `SLACK_TOKEN`   | Yes      | -       | Your Slack bot token (starts with `xoxb-`) |
+| `SLACK_CHANNEL` | Yes      | -       | Channel where notifications will be sent   |
 
 > **Note**: For Slack notifications, you'll need to:
 >
