@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="loud_noise_detector",
-    version="0.0.3",
+    version="0.0.4",
     packages=find_packages(),
     package_data={
         "src.localization": ["translations/*.json"],
