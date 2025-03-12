@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Type, TypeVar
 
 from src.utils.config import Config
+
+T = TypeVar("T", bound="BaseNotifier")
 
 
 class BaseNotifier(ABC):
@@ -9,11 +11,11 @@ class BaseNotifier(ABC):
     @classmethod
     @abstractmethod
     def create_if_configured(
-        cls,
-        config: Config,
-        **kwargs
-    ) -> Optional['BaseNotifier']:
-        raise NotImplementedError("Notifier must implement create_if_configured")
+        cls: Type[T], config: Config, **kwargs: Any
+    ) -> Optional[T]:
+        raise NotImplementedError(
+            "Notifier must implement create_if_configured"
+        )
 
     @abstractmethod
     def notify(

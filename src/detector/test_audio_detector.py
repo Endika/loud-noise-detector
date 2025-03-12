@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Generator, List, cast
+from typing import Any, Callable, Generator, List, cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -31,6 +31,7 @@ class TestAudioDetector:
         config.pre_buffer_seconds = 1
         config.rate = 44100
         config.seconds_to_record = 3
+        config.verbose = False
         config.logger = cast(logging.Logger, MockLogger())
         return config
 
@@ -113,19 +114,19 @@ class TestAudioDetector:
     def test_should_detect_below_threshold(
         self, detector: AudioDetector
     ) -> None:
-        result = detector._should_detect(0.1)  # Below threshold of 0.2
+        result = detector._should_detect(0.1)
         assert result is False
 
     def test_should_detect_within_cooldown(
         self, detector: AudioDetector
     ) -> None:
-        detector.last_detection_time = int(time.time())  # Just detected
-        result = detector._should_detect(0.3)  # Above threshold
+        detector.last_detection_time = int(time.time())
+        result = detector._should_detect(0.3)
         assert result is False
 
     def test_should_detect_valid(self, detector: AudioDetector) -> None:
-        detector.last_detection_time = int(time.time()) - 3  # Cooldown passed
-        result = detector._should_detect(0.3)  # Above threshold
+        detector.last_detection_time = int(time.time()) - 3
+        result = detector._should_detect(0.3)
         assert result is True
 
     def test_handle_detection(
@@ -140,7 +141,6 @@ class TestAudioDetector:
 
         detector._handle_detection(0.3, b"\x03" * 1024)
 
-        # Verify buffer contains pre-buffer + current data
         assert len(detector.detection_buffer) > 0
         assert detector.detection_buffer[0] == b"\x01" * 1024
         assert detector.detection_buffer[1] == b"\x02" * 1024
@@ -182,3 +182,151 @@ class TestAudioDetector:
         assert cast(MagicMock, recorder_save).call_count == 1
         assert cast(MagicMock, notifier_notify).call_count == 1
         assert cast(MagicMock, recorder_remove).call_count == 1
+
+    def test_stop(self, detector: AudioDetector) -> None:
+        detector._is_running = True
+        detector.stop()
+        assert detector._is_running is False
+
+    def test_start_with_detections(
+        self,
+        detector: AudioDetector,
+        recorders: List[BaseRecorder],
+        notifiers: List[BaseNotifier],
+    ) -> None:
+        with patch.object(detector, "setup") as mock_setup:
+            with patch.object(detector, "cleanup") as mock_cleanup:
+                mock_stream = MagicMock()
+                detector.stream = mock_stream
+
+                read_data = [b"\x00" * 1024, b"\xff" * 1024, b"\x00" * 1024]
+                rms_values = [0.1, 0.5, 0.1]
+
+                mock_stream.read = MagicMock(side_effect=read_data)
+
+                rms_patch = patch.object(
+                    detector.rms_processor, "calculate", side_effect=rms_values
+                )
+
+                with rms_patch:
+                    original_handle_detection = detector._handle_detection
+
+                    def make_mock_handle_detection() -> (
+                        Callable[[float, bytes], None]
+                    ):
+                        def mock_handle_detection(
+                            rms: float, data: bytes
+                        ) -> None:
+                            detector._is_running = False
+                            original_handle_detection(rms, data)
+
+                        return mock_handle_detection
+
+                    handle_patch = patch.object(
+                        detector,
+                        "_handle_detection",
+                        make_mock_handle_detection(),
+                    )
+
+                    with handle_patch:
+                        detector.start()
+
+                        mock_setup.assert_called_once()
+                        mock_cleanup.assert_called_once()
+
+                        assert len(detector.detection_buffer) > 0
+                        assert (
+                            cast(MagicMock, recorders[0].save).call_count >= 1
+                        )
+                        assert (
+                            cast(MagicMock, notifiers[0].notify).call_count
+                            >= 1
+                        )
+
+    def test_start_keyboard_interrupt(self, detector: AudioDetector) -> None:
+        with patch.object(detector, "setup") as mock_setup:
+            with patch.object(detector, "cleanup") as mock_cleanup:
+                mock_stream = MagicMock()
+                detector.stream = mock_stream
+                mock_stream.read = MagicMock(side_effect=KeyboardInterrupt())
+
+                detector.start()
+
+                mock_setup.assert_called_once()
+                mock_cleanup.assert_called_once()
+
+    def test_handle_detection_with_null_stream(
+        self,
+        detector: AudioDetector,
+        recorders: List[BaseRecorder],
+    ) -> None:
+        detector.stream = None
+        detector.pre_buffer = [b"\x01" * 1024]
+
+        detector._handle_detection(0.3, b"\x03" * 1024)
+
+        assert len(detector.detection_buffer) > 0
+        assert detector.detection_buffer[0] == b"\x01" * 1024
+        assert detector.detection_buffer[1] == b"\x03" * 1024
+        for i in range(2, len(detector.detection_buffer)):
+            assert detector.detection_buffer[i] == b""
+
+    def test_save_and_notify_notifier_failure(
+        self,
+        detector: AudioDetector,
+        recorders: List[BaseRecorder],
+        notifiers: List[BaseNotifier],
+    ) -> None:
+        detector.detection_buffer = [b"\x00" * 1024]
+
+        cast(MagicMock, notifiers[0].notify).return_value = False
+
+        detector._save_and_notify(0.3, "timestamp")
+
+        assert cast(MagicMock, recorders[0].save).call_count == 1
+        assert cast(MagicMock, notifiers[0].notify).call_count == 1
+
+    def test_save_and_notify_recorder_exception(
+        self,
+        detector: AudioDetector,
+        recorders: List[BaseRecorder],
+        notifiers: List[BaseNotifier],
+    ) -> None:
+        detector.detection_buffer = [b"\x00" * 1024]
+
+        cast(MagicMock, recorders[0].save).side_effect = Exception(
+            "Recorder failed"
+        )
+
+        with pytest.raises(Exception, match="Recorder failed"):
+            detector._save_and_notify(0.3, "timestamp")
+
+        assert cast(MagicMock, recorders[0].save).call_count == 1
+        assert cast(MagicMock, notifiers[0].notify).call_count == 0
+
+    def test_verbose_mode(
+        self,
+        detector: AudioDetector,
+    ) -> None:
+        detector.config.verbose = True
+
+        with patch.object(detector, "setup"):
+            with patch.object(detector, "cleanup"):
+                mock_stream = MagicMock()
+                detector.stream = mock_stream
+
+                def set_running_false(*args: Any, **kwargs: Any) -> bytes:
+                    detector._is_running = False
+                    return b"\x00" * 1024
+
+                mock_stream.read = MagicMock(side_effect=set_running_false)
+
+                rms_patch = patch.object(
+                    detector.rms_processor, "calculate", return_value=0.1
+                )
+
+                with rms_patch:
+                    with patch("builtins.print") as mock_print:
+                        detector.start()
+
+                        assert mock_print.call_count >= 1

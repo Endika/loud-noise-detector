@@ -12,17 +12,25 @@ class SlackNotifier(BaseNotifier):
 
     @classmethod
     def create_if_configured(
-        cls,
-        config: Config,
-        token: Optional[str] = None,
-        channel: Optional[str] = None
-    ) -> Optional['SlackNotifier']:
+        cls, config: Config, **kwargs: Any
+    ) -> Optional["SlackNotifier"]:
         slack_config = config.notifier_options.get("slack", {})
-        token = token or slack_config.get("token") or os.getenv("SLACK_TOKEN")
-        channel = channel or slack_config.get("channel") or os.getenv("SLACK_CHANNEL")
+        token = (
+            kwargs.get("token")
+            or slack_config.get("token")
+            or os.getenv("SLACK_TOKEN")
+        )
+        channel = (
+            kwargs.get("channel")
+            or slack_config.get("channel")
+            or os.getenv("SLACK_CHANNEL")
+        )
 
         if not token or not channel:
-            config.logger.warning("Slack configuration not found. Slack notifications will be disabled.")
+            config.logger.warning(
+                "Slack configuration not found."
+                " Slack notifications will be disabled."
+            )
             return None
 
         return cls(token=token, channel=channel)
