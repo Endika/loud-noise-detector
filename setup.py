@@ -25,10 +25,18 @@ setup(
     python_requires=">=3.6",
     author="Endika Iglesias",
     author_email="endika2@gmail.com",
-    description="Audio monitoring system that detects and alerts you about important sounds in your home while you're away. Perfect for pet owners and parents who need to stay connected to their space.",
+    description=(
+        "Audio monitoring system that detects and alerts you about important "
+        "sounds in your home while you're away. Perfect for pet owners and "
+        "parents who need to stay connected to their space."
+    ),
     long_description=long_description,
     long_description_content_type="text/markdown",
-    keywords="AudioMonitoring, PetCare, BabyMonitor, SoundDetection, DigitalParenting, SmartSolution, audio, detection, recording, notification",
+    keywords=(
+        "AudioMonitoring, PetCare, BabyMonitor, SoundDetection, "
+        "DigitalParenting, SmartSolution, audio, detection, recording, "
+        "notification"
+    ),
     url="https://github.com/Endika/loud-noise-detector",
     project_urls={
         "Source Code": "https://github.com/Endika/loud-noise-detector",
