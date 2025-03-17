@@ -203,13 +203,6 @@ Your commit messages must follow this format to trigger automatic version update
 5. Push to your branch (`git push origin feature/amazing-feature`)
 6. Open a Pull Request
 
-### Manual Release
-
-```bash
-make version  # Update version number based on commits
-make publish  # Create a release
-```
-
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

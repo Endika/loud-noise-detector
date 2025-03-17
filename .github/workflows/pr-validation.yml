@@ -48,7 +48,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest --cov=src --cov-report=term --cov-fail-under=95 -v
+          pytest --cov=src --cov-report=term --cov-fail-under=99 -v
         continue-on-error: false
 
       - name: Build package

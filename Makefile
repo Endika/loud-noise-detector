@@ -40,10 +40,6 @@ check-format:
 	$(ISORT) --check-only $(SRC_DIR) $(TEST_DIR)
 	$(BLACK) --check $(SRC_DIR) $(TEST_DIR)
 
-.PHONY: build
-build:
-	$(PYTHON) setup.py sdist bdist_wheel
-
 .PHONY: clean
 clean:
 	rm -rf build/
@@ -71,6 +67,5 @@ help:
 	@echo "  make lint         - Run static code analysis"
 	@echo "  make format       - Format code to follow standards"
 	@echo "  make check-format - Verify code is properly formatted (for CI)"
-	@echo "  make build        - Build distribution package"
 	@echo "  make clean        - Remove temporary files"
 	@echo "  make run          - Run the application"
