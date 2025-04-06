@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, Generator
+from typing import Any, Dict, Generator, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -45,17 +45,48 @@ class TestSlackNotifier:
             yield
 
     @pytest.fixture
-    def mock_successful_upload(
-        self, mock_file_read: Generator[None, None, None]
-    ) -> Generator[MagicMock, None, None]:
-        mock_response = MagicMock()
-        mock_response.json.return_value = {"ok": True}
+    def mock_file_size(self) -> Generator[None, None, None]:
+        with patch("os.path.getsize", return_value=1024):
+            yield
+
+    @pytest.fixture
+    def mock_successful_slack_upload(
+        self,
+        mock_file_read: Generator[None, None, None],
+        mock_file_size: Generator[None, None, None],
+    ) -> Generator[Dict[str, MagicMock], None, None]:
+        mock_url_response = MagicMock()
+        mock_url_response.json.return_value = {
+            "ok": True,
+            "upload_url": "https://slack-upload.example.com",
+            "file_id": "F12345678",
+        }
+
+        mock_upload_response = MagicMock()
+        mock_upload_response.status_code = 200
+
+        mock_complete_response = MagicMock()
+        mock_complete_response.json.return_value = {"ok": True}
+
+        def mock_post_side_effect(url, **kwargs):
+            if "getUploadURLExternal" in url:
+                return mock_url_response
+            elif "slack-upload.example.com" in url:
+                return mock_upload_response
+            elif "completeUploadExternal" in url:
+                return mock_complete_response
+            return MagicMock()
 
         mock_post = MagicMock()
-        mock_post.return_value = mock_response
+        mock_post.side_effect = mock_post_side_effect
 
         with patch("requests.post", mock_post):
-            yield mock_post
+            yield {
+                "post": mock_post,
+                "url_response": mock_url_response,
+                "upload_response": mock_upload_response,
+                "complete_response": mock_complete_response,
+            }
 
     @pytest.fixture
     def mock_logger(self) -> MagicMock:
@@ -97,40 +128,80 @@ class TestSlackNotifier:
         self,
         notifier: SlackNotifier,
         config: Config,
-        mock_successful_upload: MagicMock,
+        mock_successful_slack_upload: Dict[str, MagicMock],
         env_with_slack_config: Generator[None, None, None],
+        mock_file_size: Generator[None, None, None],
     ) -> None:
-        result = notifier.notify(TEST_RECORDINGS, "timestamp", 0.5, config)
+        result = notifier.notify(
+            TEST_RECORDINGS, TEST_TIMESTAMP, TEST_THRESHOLD, config
+        )
         assert result is True
 
+        mock_post = mock_successful_slack_upload["post"]
+
+        get_url_calls = [
+            call
+            for call in mock_post.call_args_list
+            if "getUploadURLExternal" in call[0][0]
+        ]
+        assert len(get_url_calls) == 1
+
+        complete_calls = [
+            call
+            for call in mock_post.call_args_list
+            if "completeUploadExternal" in call[0][0]
+        ]
+        assert len(complete_calls) == 1
+
     @pytest.mark.parametrize(
-        "response_data,expected_result,error_count",
+        "stage,response_data,expected_result",
         [
-            ({"ok": False, "error": "some_error"}, False, 3),
-            (Exception("Test error"), False, 3),
+            ("url", {"ok": False, "error": "invalid_token"}, False),
+            ("upload", None, False),
+            ("complete", {"ok": False, "error": "invalid_file"}, False),
         ],
     )
-    def test_notify_handles_api_errors_and_exceptions(
+    def test_notify_handles_api_errors(
         self,
         notifier: SlackNotifier,
         config_with_logger: Config,
         mock_logger: MagicMock,
-        response_data: Any,
+        stage: str,
+        response_data: Optional[Dict[str, Any]],
         expected_result: bool,
-        error_count: int,
         env_with_slack_config: Generator[None, None, None],
         mock_file_read: Generator[None, None, None],
+        mock_file_size: Generator[None, None, None],
     ) -> None:
-        if isinstance(response_data, Exception):
-            mock_post = MagicMock()
-            mock_post.side_effect = response_data
-        else:
-            mock_response = MagicMock()
-            mock_response.json.return_value = response_data
-            mock_post = MagicMock()
-            mock_post.return_value = mock_response
+        url_response = MagicMock()
+        url_response.json.return_value = (
+            {
+                "ok": True,
+                "upload_url": "https://example.com",
+                "file_id": "F12345",
+            }
+            if stage != "url"
+            else response_data
+        )
 
-        with patch("requests.post", mock_post):
+        upload_response = MagicMock()
+        upload_response.status_code = 400 if stage == "upload" else 200
+
+        complete_response = MagicMock()
+        complete_response.json.return_value = (
+            {"ok": True} if stage != "complete" else response_data
+        )
+
+        def mock_post_side_effect(url, **kwargs):
+            if "getUploadURLExternal" in url:
+                return url_response
+            elif "example.com" in url:
+                return upload_response
+            elif "completeUploadExternal" in url:
+                return complete_response
+            return MagicMock()
+
+        with patch("requests.post", side_effect=mock_post_side_effect):
             result = notifier.notify(
                 TEST_RECORDINGS,
                 TEST_TIMESTAMP,
@@ -139,7 +210,25 @@ class TestSlackNotifier:
             )
 
             assert result is expected_result
-            assert mock_logger.error.call_count == error_count
+            assert mock_logger.error.call_count > 0
+
+    def test_notify_handles_exceptions(
+        self,
+        notifier: SlackNotifier,
+        config_with_logger: Config,
+        mock_logger: MagicMock,
+        env_with_slack_config: Generator[None, None, None],
+    ) -> None:
+        with patch("requests.post", side_effect=Exception("Test error")):
+            result = notifier.notify(
+                TEST_RECORDINGS,
+                TEST_TIMESTAMP,
+                TEST_THRESHOLD,
+                config_with_logger,
+            )
+
+            assert result is False
+            assert mock_logger.error.call_count > 0
 
     @pytest.mark.parametrize(
         "config_source,expected_token,expected_channel",
@@ -198,3 +287,32 @@ class TestSlackNotifier:
             notifier = SlackNotifier.create_if_configured(config)
 
             assert notifier is None
+
+    def test_get_recording_path(
+        self,
+        notifier: SlackNotifier,
+        config_with_logger: Config,
+        mock_logger: MagicMock,
+    ) -> None:
+        path = notifier._get_recording_path(
+            TEST_RECORDINGS, config_with_logger
+        )
+        assert path == TEST_RECORDING["path"]
+
+        path = notifier._get_recording_path([], config_with_logger)
+        assert path is None
+        assert mock_logger.error.call_count == 1
+
+    def test_create_notification_message(
+        self, notifier: SlackNotifier, config: Config
+    ) -> None:
+        with patch.object(
+            config, "get_localized_text", side_effect=lambda key: key
+        ):
+            message = notifier._create_notification_message(
+                TEST_TIMESTAMP, TEST_THRESHOLD, config
+            )
+            assert TEST_TIMESTAMP in message
+            assert str(TEST_THRESHOLD) in message
+            assert "noise_detected" in message
+            assert "rms_amplitude" in message
