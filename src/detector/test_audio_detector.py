@@ -281,12 +281,8 @@ class TestAudioDetectorErrorHandling:
                                 mock_cleanup.assert_called_once()
 
                                 assert len(detector.detection_buffer) > 0
-                                assert (
-                                    save_mock.call_count >= 1
-                                )  # Usar el mock local
-                                assert (
-                                    notify_mock.call_count >= 1
-                                )  # Usar el mock local
+                                assert save_mock.call_count >= 1
+                                assert notify_mock.call_count >= 1
 
     def test_start_keyboard_interrupt(self, detector: AudioDetector) -> None:
         with patch.object(detector, "setup") as mock_setup:

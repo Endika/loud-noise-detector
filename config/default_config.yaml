@@ -21,4 +21,4 @@ keep_files: true
 # Notifier settings
 notifier_options:
   slack:
-    channel: "noise" 
+    channel: "CHANNEL-ID-HERE" 
