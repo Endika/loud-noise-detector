@@ -102,7 +102,7 @@ Generate your `.env` file with all necessary configurations:
 cat > .env << EOL
 # Slack configuration (required for Slack notifications)
 SLACK_TOKEN=xoxb-your-token-here
-SLACK_CHANNEL=noise-alert
+SLACK_CHANNEL=CHANNEL-ID-HERE
 EOL
 ```
 
@@ -119,6 +119,7 @@ EOL
 > 2. Add `chat:write` and `files:write` OAuth scopes
 > 3. Install the app to your workspace
 > 4. Copy the Bot User OAuth Token to `SLACK_TOKEN`
+> 5. Copy the Channel ID to `SLACK_CHANNEL`
 
 ### Configuration Examples
 
@@ -130,7 +131,7 @@ cooldown_seconds: 30 # Longer cooldown to avoid too many notifications
 seconds_to_record: 10 # Longer recording to capture context
 pre_buffer_seconds: 3 # Capture sound before the bark
 notifier_options:
-  slack_channel: pet-monitor
+  slack_channel: CHANNEL-ID-HERE
 ```
 
 #### For Baby Monitoring
@@ -141,7 +142,7 @@ cooldown_seconds: 10 # Shorter cooldown for more frequent checks
 seconds_to_record: 5 # Shorter recording duration
 pre_buffer_seconds: 1 # Less pre-recording needed
 notifier_options:
-  slack_channel: baby-monitor
+  slack_channel: CHANNEL-ID-HERE
 ```
 
 You can create a configuration file in either YAML or JSON format. Place it in the `config/` directory or specify its location using the `--config` argument.
