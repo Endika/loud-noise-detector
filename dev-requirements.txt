@@ -4,7 +4,7 @@ flake8==7.2.0
 mypy==1.15.0
 black==25.1.0
 isort==6.0.1
-python-semantic-release==9.21.0
+python-semantic-release==9.21.1
 pytest-benchmark==5.1.0
 
 -r requirements.txt 
