@@ -1,7 +1,7 @@
 pytest==8.4.2
 pytest-cov==6.3.0
 flake8==7.3.0
-mypy==1.19.0
+mypy==1.19.1
 black==25.11.0
 isort==6.1.0
 python-semantic-release==9.21.1
