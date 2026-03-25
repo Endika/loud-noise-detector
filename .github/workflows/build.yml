@@ -1,9 +1,11 @@
 name: Build and Publish
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
+
+permissions:
+  contents: read
 
 jobs:
   build-and-publish:
@@ -17,21 +19,25 @@ jobs:
         with:
           python-version: "3.9"
 
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "poetry>=2.0,<3"
+      - name: Configure Poetry
+        run: |
+          poetry config virtualenvs.create true
+          poetry config virtualenvs.in-project true
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y portaudio19-dev python3-pyaudio
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -e .
+        run: poetry install --only main
 
       - name: Build package
-        run: |
-          python -m pip install build
-          python -m build
+        run: poetry build
 
       - name: Verify package
         run: |
@@ -41,29 +47,5 @@ jobs:
       - name: Publish to PyPI
         if: success()
         env:
-          TWINE_USERNAME: ${{ secrets.PYPI_API_USER }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: |
-          python -m pip install build twine
-          python -m build
-          python -m twine upload dist/*
-
-      - name: Notify success
-        if: success()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_RELEASES }}
-          SLACK_CHANNEL: releases
-          SLACK_TITLE: Package Published to PyPI
-          SLACK_MESSAGE: "Version ${{ github.event.release.tag_name }} has been published to PyPI"
-          SLACK_COLOR: good
-
-      - name: Notify failure
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_RELEASES }}
-          SLACK_CHANNEL: releases
-          SLACK_TITLE: PyPI Publication Failed
-          SLACK_MESSAGE: "Failed to publish version ${{ github.event.release.tag_name }} to PyPI"
-          SLACK_COLOR: danger
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
+        run: poetry publish

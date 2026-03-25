@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import requests
 
@@ -9,7 +9,6 @@ from .base import BaseNotifier
 
 
 class SlackNotifier(BaseNotifier):
-
     @classmethod
     def create_if_configured(
         cls, config: Config, **kwargs: Any
@@ -43,7 +42,7 @@ class SlackNotifier(BaseNotifier):
 
     def notify(
         self,
-        recordings: List[Dict[str, Any]],
+        recordings: list[dict[str, Any]],
         timestamp: str,
         normalized_rms: float,
         config: Config,
@@ -71,18 +70,15 @@ class SlackNotifier(BaseNotifier):
             ):
                 return False
 
-            if not self._complete_upload(
+            return self._complete_upload(
                 upload_data["file_id"], filename, config
-            ):
-                return False
-
-            return True
+            )
         except Exception as e:
             config.logger.error(f"Error sending notification to Slack: {e}")
             return False
 
     def _get_recording_path(
-        self, recordings: List[Dict[str, Any]], config: Config
+        self, recordings: list[dict[str, Any]], config: Config
     ) -> Optional[str]:
         recording_path = None
         for recording in recordings:
@@ -107,7 +103,7 @@ class SlackNotifier(BaseNotifier):
 
     def _get_upload_url(
         self, filename: str, file_size: int, message: str, config: Config
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[dict[str, Any]]:
         headers = {"Authorization": f"Bearer {self.token}"}
         get_url_api = "https://slack.com/api/files.getUploadURLExternal"
 
@@ -144,7 +140,8 @@ class SlackNotifier(BaseNotifier):
 
         if upload_response.status_code != 200:
             config.logger.error(
-                f"Error uploading file to external URL: {upload_response.status_code}"
+                "Error uploading file to external URL: "
+                f"{upload_response.status_code}"
             )
             return False
 

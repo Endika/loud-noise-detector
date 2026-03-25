@@ -5,7 +5,6 @@ from src.utils.config import Config
 
 
 class RMSProcessor:
-
     def __init__(self, config: Config) -> None:
         self.config = config
 

@@ -1,6 +1,6 @@
 import os
 import wave
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from src.utils.config import Config
 
@@ -22,11 +22,11 @@ class WaveRecorder(BaseRecorder):
 
     def save(
         self,
-        chunks: List[bytes],
+        chunks: list[bytes],
         config: Config,
         timestamp: str,
         normalized_rms: float,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         filename = f"{self.prefix}{timestamp}.wav"
         filepath = os.path.join(self.output_dir, filename)
 

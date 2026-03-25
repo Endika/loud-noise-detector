@@ -1,13 +1,12 @@
 import json
 import logging
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import yaml
 
 
 class Config:
-
     def __init__(self, config_file: Optional[str] = None) -> None:
         # Default configuration values
         self.threshold = 0.1
@@ -22,7 +21,7 @@ class Config:
         self.verbose = False
         self.timestamp_format = "%Y%m%d_%H%M%S"
         self.language = "en"
-        self.notifier_options: Dict[str, Any] = {}
+        self.notifier_options: dict[str, Any] = {}
         self.logger: logging.Logger = logging.getLogger("loud_noise_detector")
 
         # Load configuration from file if provided
@@ -31,7 +30,7 @@ class Config:
 
     def _load_from_file(self, config_file: str) -> None:
         try:
-            with open(config_file, "r") as f:
+            with open(config_file) as f:
                 if config_file.endswith(".yaml") or config_file.endswith(
                     ".yml"
                 ):
@@ -61,7 +60,7 @@ class Config:
                 f"{self.language}.json",
             )
 
-            with open(translations_file, "r", encoding="utf-8") as f:
+            with open(translations_file, encoding="utf-8") as f:
                 translations = json.load(f)
 
             return str(translations.get(key, key))

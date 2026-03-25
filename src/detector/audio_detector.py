@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 import pyaudio
 
@@ -11,12 +11,11 @@ from src.utils.config import Config
 
 
 class AudioDetector:
-
     def __init__(
         self,
         config: Config,
-        recorders: List[BaseRecorder],
-        notifiers: List[BaseNotifier],
+        recorders: list[BaseRecorder],
+        notifiers: list[BaseNotifier],
     ) -> None:
         self.config = config
         self.recorders = recorders
@@ -25,8 +24,8 @@ class AudioDetector:
         self.stream: Optional[pyaudio.Stream] = None
         self.audio: Optional[pyaudio.PyAudio] = None
         self.rms_processor = RMSProcessor(config)
-        self.detection_buffer: List[bytes] = []
-        self.pre_buffer: List[bytes] = []
+        self.detection_buffer: list[bytes] = []
+        self.pre_buffer: list[bytes] = []
         self.last_detection_time = 0
 
     def setup(self) -> None:
@@ -102,13 +101,8 @@ class AudioDetector:
             return False
 
         current_time = time.time()
-        if (
-            current_time - self.last_detection_time
-            < self.config.cooldown_seconds
-        ):
-            return False
-
-        return True
+        elapsed = current_time - self.last_detection_time
+        return elapsed >= self.config.cooldown_seconds
 
     def _handle_detection(self, normalized_rms: float, data: bytes) -> None:
         self.last_detection_time = int(time.time())

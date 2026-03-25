@@ -2,7 +2,6 @@
 import argparse
 import os
 import sys
-from typing import List
 
 from dotenv import load_dotenv
 
@@ -79,7 +78,7 @@ def main() -> int:
         output_dir=output_dir, temporary=not config.keep_files
     )
 
-    notifiers: List[BaseNotifier] = []
+    notifiers: list[BaseNotifier] = []
     if slack_notifier := SlackNotifier.create_if_configured(config):
         notifiers.append(slack_notifier)
 

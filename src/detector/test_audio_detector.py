@@ -1,10 +1,10 @@
+import contextlib
 import time
+from collections.abc import Generator
 from logging import Logger
 from typing import (
     Any,
     Callable,
-    Generator,
-    List,
     Optional,
     Protocol,
     Union,
@@ -41,7 +41,7 @@ class BenchmarkFixture(Protocol):
 
 
 @pytest.fixture
-def recorders() -> List[BaseRecorder]:
+def recorders() -> list[BaseRecorder]:
     recorder = MagicMock(spec=BaseRecorder)
     save_mock = MagicMock(spec=MagicMock)
     save_mock.return_value = {
@@ -51,13 +51,13 @@ def recorders() -> List[BaseRecorder]:
     remove_mock = MagicMock(spec=MagicMock)
     remove_mock.return_value = True
 
-    setattr(recorder, "save", save_mock)
-    setattr(recorder, "remove_file", remove_mock)
+    recorder.save = save_mock
+    recorder.remove_file = remove_mock
     return [recorder]
 
 
 @pytest.fixture
-def notifiers() -> List[BaseNotifier]:
+def notifiers() -> list[BaseNotifier]:
     notifier = MagicMock(spec=BaseNotifier)
     notify_mock = MagicMock(spec=MagicMock)
     notify_mock.return_value = True
@@ -69,13 +69,12 @@ def notifiers() -> List[BaseNotifier]:
 @pytest.fixture
 def detector(
     config: Config,
-    recorders: List[BaseRecorder],
-    notifiers: List[BaseNotifier],
+    recorders: list[BaseRecorder],
+    notifiers: list[BaseNotifier],
 ) -> Generator[AudioDetector, None, None]:
-    with patch("pyaudio.PyAudio"):
-        with patch("pyaudio.Stream"):
-            detector = AudioDetector(config, recorders, notifiers)
-            yield detector
+    with patch("pyaudio.PyAudio"), patch("pyaudio.Stream"):
+        detector = AudioDetector(config, recorders, notifiers)
+        yield detector
 
 
 class TestAudioDetectorBasics:
@@ -83,8 +82,8 @@ class TestAudioDetectorBasics:
         self,
         detector: AudioDetector,
         config: Config,
-        recorders: List[BaseRecorder],
-        notifiers: List[BaseNotifier],
+        recorders: list[BaseRecorder],
+        notifiers: list[BaseNotifier],
     ) -> None:
         assert detector.config == config
         assert detector.recorders == recorders
@@ -151,12 +150,11 @@ class TestAudioDetectorDetection:
 
 
 class TestAudioDetectorRecording:
-
     def test_handle_detection(
         self,
         detector: AudioDetector,
-        recorders: List[BaseRecorder],
-        notifiers: List[BaseNotifier],
+        recorders: list[BaseRecorder],
+        notifiers: list[BaseNotifier],
     ) -> None:
         detector.stream = MagicMock()
         detector.stream.read = MagicMock(return_value=b"\x00" * 1024)
@@ -192,8 +190,8 @@ class TestAudioDetectorRecording:
     def test_save_and_notify(
         self,
         detector: AudioDetector,
-        recorders: List[BaseRecorder],
-        notifiers: List[BaseNotifier],
+        recorders: list[BaseRecorder],
+        notifiers: list[BaseNotifier],
         keep_files: bool,
         expected_remove_calls: int,
     ) -> None:
@@ -221,12 +219,11 @@ class TestAudioDetectorRecording:
 
 
 class TestAudioDetectorErrorHandling:
-
     def test_detector_triggers_recording_on_threshold_detection(
         self,
         detector: AudioDetector,
-        recorders: List[BaseRecorder],
-        notifiers: List[BaseNotifier],
+        recorders: list[BaseRecorder],
+        notifiers: list[BaseNotifier],
     ) -> None:
         with patch.object(detector, "setup") as mock_setup:
             with patch.object(detector, "cleanup") as mock_cleanup:
@@ -257,9 +254,9 @@ class TestAudioDetectorErrorHandling:
                                 detector._handle_detection
                             )
 
-                            def make_mock_handle_detection() -> (
-                                Callable[[float, bytes], None]
-                            ):
+                            def make_mock_handle_detection() -> Callable[
+                                [float, bytes], None
+                            ]:
                                 def mock_handle_detection(
                                     rms: float, data: bytes
                                 ) -> None:
@@ -299,7 +296,7 @@ class TestAudioDetectorErrorHandling:
     def test_handle_detection_with_null_stream(
         self,
         detector: AudioDetector,
-        recorders: List[BaseRecorder],
+        recorders: list[BaseRecorder],
     ) -> None:
         detector.stream = None
         detector.pre_buffer = [b"\x01" * 1024]
@@ -315,8 +312,8 @@ class TestAudioDetectorErrorHandling:
     def test_save_and_notify_notifier_failure(
         self,
         detector: AudioDetector,
-        recorders: List[BaseRecorder],
-        notifiers: List[BaseNotifier],
+        recorders: list[BaseRecorder],
+        notifiers: list[BaseNotifier],
     ) -> None:
         detector.detection_buffer = [b"\x00" * 1024]
 
@@ -338,8 +335,8 @@ class TestAudioDetectorErrorHandling:
     def test_save_and_notify_recorder_exception(
         self,
         detector: AudioDetector,
-        recorders: List[BaseRecorder],
-        notifiers: List[BaseNotifier],
+        recorders: list[BaseRecorder],
+        notifiers: list[BaseNotifier],
     ) -> None:
         detector.detection_buffer = [b"\x00" * 1024]
         save_mock = MagicMock(spec=MagicMock)
@@ -384,7 +381,7 @@ class TestAudioDetectorErrorHandling:
 
     @pytest.mark.parametrize(
         "error_type,error_value",
-        [("io_error", IOError("Stream read error")), ("empty_data", b"")],
+        [("io_error", OSError("Stream read error")), ("empty_data", b"")],
     )
     def test_stream_reading_errors(
         self,
@@ -413,14 +410,14 @@ class TestAudioDetectorErrorHandling:
 
                 mock_stream.read = MagicMock(side_effect=read_side_effect)
 
-                with patch.object(
-                    detector.rms_processor, "calculate", return_value=0.1
+                with (
+                    patch.object(
+                        detector.rms_processor, "calculate", return_value=0.1
+                    ),
+                    patch.object(detector.config.logger, "error"),
                 ):
-                    with patch.object(detector.config.logger, "error"):
-                        try:
-                            detector.start()
-                        except IOError:
-                            pass
+                    with contextlib.suppress(OSError):
+                        detector.start()
 
                 assert detector._is_running is False
                 if error_type == "empty_data":
@@ -433,7 +430,7 @@ class TestAudioDetectorErrorHandling:
         detector.pre_buffer = [b"\x01" * 1024]
         detector.stream = MagicMock()
 
-        detector.stream.read = MagicMock(side_effect=IOError("Stream closed"))
+        detector.stream.read = MagicMock(side_effect=OSError("Stream closed"))
 
         with patch.object(detector, "_save_and_notify"):
             detector._handle_detection(0.3, b"\x03" * 1024)
@@ -445,8 +442,8 @@ class TestAudioDetectorErrorHandling:
     def test_notifier_exception_handling(
         self,
         detector: AudioDetector,
-        recorders: List[BaseRecorder],
-        notifiers: List[BaseNotifier],
+        recorders: list[BaseRecorder],
+        notifiers: list[BaseNotifier],
     ) -> None:
         detector.detection_buffer = [b"\x00" * 1024]
 
@@ -463,17 +460,15 @@ class TestAudioDetectorErrorHandling:
                 with patch.object(
                     detector.config.logger, "error"
                 ) as mock_error:
-                    try:
+                    with contextlib.suppress(Exception):
                         detector._save_and_notify(0.3, "timestamp")
-                    except Exception:
-                        pass
 
                     assert mock_error.call_count >= 0
 
     def test_file_removal_failure(
         self,
         detector: AudioDetector,
-        recorders: List[BaseRecorder],
+        recorders: list[BaseRecorder],
     ) -> None:
         detector.config.keep_files = False
         detector.detection_buffer = [b"\x00" * 1024]
@@ -538,7 +533,7 @@ class TestAudioDetectorErrorHandling:
     def test_remove_file_with_invalid_path(
         self,
         detector: AudioDetector,
-        recorders: List[BaseRecorder],
+        recorders: list[BaseRecorder],
         path_value: Optional[str],
     ) -> None:
         detector.config.keep_files = False
@@ -571,13 +566,15 @@ class TestAudioDetectorErrorHandling:
                     detector._is_running = False
                     return 0.1
 
-                with patch.object(
-                    detector.rms_processor,
-                    "calculate",
-                    side_effect=stop_after_first_iter,
+                with (
+                    patch.object(
+                        detector.rms_processor,
+                        "calculate",
+                        side_effect=stop_after_first_iter,
+                    ),
+                    patch.object(detector.config.logger, "info"),
                 ):
-                    with patch.object(detector.config.logger, "info"):
-                        detector.start()
+                    detector.start()
 
                 assert mock_stream.read.call_count == 1
 
@@ -635,13 +632,15 @@ class TestAudioDetectorErrorHandling:
                     detector.stop()
                     return 0.1
 
-                with patch.object(
-                    detector.rms_processor,
-                    "calculate",
-                    side_effect=stop_after_first_iter,
+                with (
+                    patch.object(
+                        detector.rms_processor,
+                        "calculate",
+                        side_effect=stop_after_first_iter,
+                    ),
+                    patch.object(detector.config.logger, "info"),
                 ):
-                    with patch.object(detector.config.logger, "info"):
-                        detector.start()
+                    detector.start()
 
                 assert detector._is_running is False
 
@@ -711,13 +710,13 @@ class TestAudioDetectorBenchmarks:
     def test_benchmark_handle_detection(
         self,
         detector: AudioDetector,
-        recorders: List[BaseRecorder],
-        notifiers: List[BaseNotifier],
+        recorders: list[BaseRecorder],
+        notifiers: list[BaseNotifier],
         benchmark: BenchmarkFixture,
     ) -> None:
         detector.stream = MagicMock()
         read_mock = MagicMock(return_value=b"\x00" * 1024)
-        setattr(detector.stream, "read", read_mock)
+        detector.stream.read = read_mock
         detector.pre_buffer = [b"\x01" * 1024, b"\x02" * 1024]
 
         save_notify_mock = MagicMock()
@@ -732,8 +731,8 @@ class TestAudioDetectorBenchmarks:
     def test_benchmark_save_and_notify(
         self,
         detector: AudioDetector,
-        recorders: List[BaseRecorder],
-        notifiers: List[BaseNotifier],
+        recorders: list[BaseRecorder],
+        notifiers: list[BaseNotifier],
         benchmark: BenchmarkFixture,
     ) -> None:
         detector.detection_buffer = [b"\x00" * 1024 for _ in range(10)]

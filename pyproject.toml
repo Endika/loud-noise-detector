@@ -1,45 +1,53 @@
+[tool.poetry]
+name = "loud-noise-detector"
+version = "2.0.2"
+description = "Audio monitoring system that detects and alerts you about important sounds in your home while you're away."
+authors = ["Endika Iglesias <endika2@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+homepage = "https://github.com/Endika/loud-noise-detector"
+repository = "https://github.com/Endika/loud-noise-detector"
+keywords = ["audio", "monitoring", "sound-detection", "pet-care", "baby-monitor"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+]
+packages = [{include = "src"}]
+
+[tool.poetry.scripts]
+loud-noise-detector = "src.main:main"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+pyaudio = "^0.2.14"
+pyyaml = "^6.0.3"
+requests = "^2.32.5"
+numpy = "^2.0.2"
+python-dotenv = "^1.2.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.2"
+pytest-cov = "^6.3.0"
+pytest-benchmark = "^5.2.3"
+ruff = "^0.11.0"
+mypy = "^1.19.1"
+
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-[tool.black]
+[tool.ruff]
+target-version = "py39"
 line-length = 79
-target-version = ['py36', 'py37', 'py38', 'py39']
-include = '\.pyi?$'
 
-[tool.isort]
-profile = "black"
-line_length = 80
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B", "SIM"]
 
-[tool.semantic_release]
-version_variable = [
-    "src/__init__.py:__version__",
-    "setup.py:version"
-]
-branch = "main"
-upload_to_pypi = false
-upload_to_release = true
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
 
-[tool.semantic_release.commit_parser_options]
-allowed_tags = [
-    "build",
-    "chore",
-    "ci",
-    "docs",
-    "feat",
-    "fix",
-    "perf",
-    "refactor",
-    "style",
-    "test"
-]
-minor_tags = ["feat"]
-patch_tags = ["fix", "perf"] 
+[tool.ruff.lint.per-file-ignores]
+"**/test_*.py" = ["SIM117"]
 
 [tool.coverage.run]
 omit = ["*/test_*.py", "*/__init__.py", "*/base.py"]

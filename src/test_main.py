@@ -1,5 +1,6 @@
 import os
-from typing import Any, Generator
+from collections.abc import Generator
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -8,7 +9,6 @@ from src.main import main, parse_arguments
 
 
 class TestArgumentParsing:
-
     def test_parse_arguments_default(self) -> None:
         with patch("sys.argv", ["main.py"]):
             args = parse_arguments()
@@ -44,21 +44,17 @@ class TestArgumentParsing:
 
 
 class TestMainFunction:
-
     @pytest.fixture
     def setup_mocks(self) -> Generator[dict, None, None]:
         mocks = {}
 
-        with patch("src.main.Config") as mock_config_class, patch(
-            "src.main.setup_logger"
-        ) as mock_setup_logger, patch(
-            "src.main.WaveRecorder"
-        ) as mock_recorder_class, patch(
-            "src.main.AudioDetector"
-        ) as mock_detector_class, patch(
-            "os.makedirs"
-        ) as mock_makedirs:
-
+        with (
+            patch("src.main.Config") as mock_config_class,
+            patch("src.main.setup_logger") as mock_setup_logger,
+            patch("src.main.WaveRecorder") as mock_recorder_class,
+            patch("src.main.AudioDetector") as mock_detector_class,
+            patch("os.makedirs") as mock_makedirs,
+        ):
             mocks["config"] = MagicMock()
             mocks["config"].verbose = False
             mocks["config"].language = "en"
@@ -103,20 +99,22 @@ class TestMainFunction:
     ) -> None:
         mock_slack = MagicMock() if notifier_configured else None
 
-        with patch(
-            "src.main.SlackNotifier.create_if_configured",
-            return_value=mock_slack,
+        with (
+            patch(
+                "src.main.SlackNotifier.create_if_configured",
+                return_value=mock_slack,
+            ),
+            patch("sys.argv", ["main.py"]),
         ):
-            with patch("sys.argv", ["main.py"]):
-                result = main()
+            result = main()
 
-                assert result == 0
-                setup_mocks["detector_class"].assert_called_once()
+            assert result == 0
+            setup_mocks["detector_class"].assert_called_once()
 
-                call_args = setup_mocks["detector_class"].call_args[0]
-                assert call_args[0] == setup_mocks["config"]
-                assert call_args[1] == [setup_mocks["recorder"]]
-                assert len(call_args[2]) == expected_notifiers
+            call_args = setup_mocks["detector_class"].call_args[0]
+            assert call_args[0] == setup_mocks["config"]
+            assert call_args[1] == [setup_mocks["recorder"]]
+            assert len(call_args[2]) == expected_notifiers
 
     @pytest.mark.parametrize(
         "args,expected_config,makedirs_call",
@@ -155,21 +153,17 @@ class TestMainFunction:
 
 
 class TestMainErrorHandling:
-
     @pytest.fixture
     def setup_mocks(self) -> Generator[dict, None, None]:
         mocks = {}
 
-        with patch("src.main.Config") as mock_config_class, patch(
-            "src.main.setup_logger"
-        ) as mock_setup_logger, patch(
-            "src.main.WaveRecorder"
-        ) as mock_recorder_class, patch(
-            "src.main.AudioDetector"
-        ) as mock_detector_class, patch(
-            "os.makedirs"
-        ) as mock_makedirs:
-
+        with (
+            patch("src.main.Config") as mock_config_class,
+            patch("src.main.setup_logger") as mock_setup_logger,
+            patch("src.main.WaveRecorder") as mock_recorder_class,
+            patch("src.main.AudioDetector") as mock_detector_class,
+            patch("os.makedirs") as mock_makedirs,
+        ):
             mocks["config"] = MagicMock()
             mocks["config"].verbose = False
             mocks["config"].language = "en"

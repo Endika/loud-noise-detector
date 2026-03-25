@@ -1,7 +1,9 @@
+import contextlib
 import os
 import tempfile
 import wave
-from typing import Any, Callable, Generator, Protocol
+from collections.abc import Generator
+from typing import Any, Callable, Protocol
 from unittest.mock import MagicMock
 
 import pytest
@@ -147,9 +149,7 @@ class TestWaveRecorder:
 
         original_remove = os.remove
         try:
-            os.remove = MagicMock(
-                side_effect=OSError("Simulated error")
-            )  # type: ignore[assignment]
+            os.remove = MagicMock(side_effect=OSError("Simulated error"))  # type: ignore[assignment]
 
             result = recorder.remove_file(test_file, config)
 
@@ -159,10 +159,8 @@ class TestWaveRecorder:
         finally:
             os.remove = original_remove  # type: ignore[assignment]
             if os.path.exists(test_file):
-                try:
+                with contextlib.suppress(Exception):
                     os.remove(test_file)
-                except:  # noqa: E722
-                    pass
 
 
 class BenchmarkFixture(Protocol):

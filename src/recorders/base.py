@@ -1,19 +1,18 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any
 
 from src.utils.config import Config
 
 
 class BaseRecorder(ABC):
-
     @abstractmethod
     def save(
         self,
-        chunks: List[bytes],
+        chunks: list[bytes],
         config: Config,
         timestamp: str,
         normalized_rms: float,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         raise NotImplementedError("Recorder must implement save")
 
     @abstractmethod

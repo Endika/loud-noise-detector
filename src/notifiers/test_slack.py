@@ -1,5 +1,6 @@
 import os
-from typing import Any, Dict, Generator, Optional
+from collections.abc import Generator
+from typing import Any, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -54,7 +55,7 @@ class TestSlackNotifier:
         self,
         mock_file_read: Generator[None, None, None],
         mock_file_size: Generator[None, None, None],
-    ) -> Generator[Dict[str, MagicMock], None, None]:
+    ) -> Generator[dict[str, MagicMock], None, None]:
         mock_url_response = MagicMock()
         mock_url_response.json.return_value = {
             "ok": True,
@@ -68,7 +69,7 @@ class TestSlackNotifier:
         mock_complete_response = MagicMock()
         mock_complete_response.json.return_value = {"ok": True}
 
-        def mock_post_side_effect(url, **kwargs):
+        def mock_post_side_effect(url: str, **kwargs: Any) -> MagicMock:
             if "getUploadURLExternal" in url:
                 return mock_url_response
             elif "slack-upload.example.com" in url:
@@ -112,7 +113,7 @@ class TestSlackNotifier:
         notifier: SlackNotifier,
         config_with_logger: Config,
         mock_logger: MagicMock,
-        env_vars: Dict[str, str],
+        env_vars: dict[str, str],
         expected_result: bool,
         error_count: int,
     ) -> None:
@@ -128,7 +129,7 @@ class TestSlackNotifier:
         self,
         notifier: SlackNotifier,
         config: Config,
-        mock_successful_slack_upload: Dict[str, MagicMock],
+        mock_successful_slack_upload: dict[str, MagicMock],
         env_with_slack_config: Generator[None, None, None],
         mock_file_size: Generator[None, None, None],
     ) -> None:
@@ -167,7 +168,7 @@ class TestSlackNotifier:
         config_with_logger: Config,
         mock_logger: MagicMock,
         stage: str,
-        response_data: Optional[Dict[str, Any]],
+        response_data: Optional[dict[str, Any]],
         expected_result: bool,
         env_with_slack_config: Generator[None, None, None],
         mock_file_read: Generator[None, None, None],
@@ -192,7 +193,7 @@ class TestSlackNotifier:
             {"ok": True} if stage != "complete" else response_data
         )
 
-        def mock_post_side_effect(url, **kwargs):
+        def mock_post_side_effect(url: str, **kwargs: Any) -> MagicMock:
             if "getUploadURLExternal" in url:
                 return url_response
             elif "example.com" in url:

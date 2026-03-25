@@ -28,7 +28,6 @@ def processor(config: Config) -> RMSProcessor:
 
 
 class TestRMSProcessorFunctionality:
-
     def test_calculate_normal_data(self, processor: RMSProcessor) -> None:
         sample_data = array.array("h", [100, 200, 300, 400]).tobytes()
 
@@ -55,7 +54,6 @@ class TestRMSProcessorFunctionality:
 
 
 class TestRMSProcessorBenchmarks:
-
     def test_benchmark_rms_small_data(
         self, processor: RMSProcessor, benchmark: BenchmarkFixture
     ) -> None:

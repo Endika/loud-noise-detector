@@ -1,21 +1,19 @@
-name: Performance Benchmarks
+name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
 
 concurrency:
-  group: benchmarks-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  benchmark:
+  ci:
     runs-on: ubuntu-latest
 
     steps:
@@ -52,16 +50,18 @@ jobs:
       - name: Install dependencies
         run: poetry install
 
-      - name: Run benchmarks
+      - name: Lint and check formatting
         run: |
-          poetry run pytest -v \
-            --benchmark-only \
-            --benchmark-json output.json
+          poetry run ruff check src
+          poetry run ruff format --check src
 
-      - name: Upload benchmark results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmark-results
-          path: output.json
-          retention-days: 30
+      - name: Run tests with coverage
+        run: poetry run pytest --cov=src --cov-report=term --cov-fail-under=99 -v
+
+      - name: Build package
+        run: poetry build
+
+      - name: Verify package
+        run: |
+          python -m pip install twine
+          twine check dist/*
