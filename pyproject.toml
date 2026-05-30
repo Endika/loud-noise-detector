@@ -13,6 +13,7 @@ classifiers = [
     "Intended Audience :: Developers",
 ]
 packages = [{include = "src"}]
+exclude = ["src/**/test_*.py"]
 
 [tool.poetry.scripts]
 loud-noise-detector = "src.main:main"
