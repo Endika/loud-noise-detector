@@ -2,8 +2,8 @@ import contextlib
 import os
 import tempfile
 import wave
-from collections.abc import Generator
-from typing import Any, Callable, Protocol
+from collections.abc import Callable, Generator
+from typing import Any, Protocol
 from unittest.mock import MagicMock
 
 import pytest

@@ -1,6 +1,6 @@
 import os
 from collections.abc import Generator
-from typing import Any, Optional
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -168,7 +168,7 @@ class TestSlackNotifier:
         config_with_logger: Config,
         mock_logger: MagicMock,
         stage: str,
-        response_data: Optional[dict[str, Any]],
+        response_data: dict[str, Any] | None,
         expected_result: bool,
         env_with_slack_config: Generator[None, None, None],
         mock_file_read: Generator[None, None, None],

@@ -1,13 +1,10 @@
 import contextlib
 import time
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from logging import Logger
 from typing import (
     Any,
-    Callable,
-    Optional,
     Protocol,
-    Union,
     cast,
 )
 from unittest.mock import MagicMock, patch
@@ -387,7 +384,7 @@ class TestAudioDetectorErrorHandling:
         self,
         detector: AudioDetector,
         error_type: str,
-        error_value: Union[IOError, bytes],
+        error_value: IOError | bytes,
     ) -> None:
         with patch.object(detector, "setup"):
             with patch.object(detector, "cleanup"):
@@ -534,7 +531,7 @@ class TestAudioDetectorErrorHandling:
         self,
         detector: AudioDetector,
         recorders: list[BaseRecorder],
-        path_value: Optional[str],
+        path_value: str | None,
     ) -> None:
         detector.config.keep_files = False
         detector.detection_buffer = [b"\x00" * 1024]
