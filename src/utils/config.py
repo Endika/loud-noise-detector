@@ -1,13 +1,13 @@
 import json
 import logging
 import os
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 
 
 class Config:
-    def __init__(self, config_file: Optional[str] = None) -> None:
+    def __init__(self, config_file: str | None = None) -> None:
         # Default configuration values
         self.threshold = 0.1
         self.cooldown_seconds = 5

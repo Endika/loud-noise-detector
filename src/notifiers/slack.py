@@ -34,9 +34,7 @@ class SlackNotifier(BaseNotifier):
 
         return cls(token=token, channel=channel)
 
-    def __init__(
-        self, token: Optional[str] = None, channel: Optional[str] = None
-    ):
+    def __init__(self, token: str | None = None, channel: str | None = None):
         self.token = token
         self.channel = channel
 
@@ -79,7 +77,7 @@ class SlackNotifier(BaseNotifier):
 
     def _get_recording_path(
         self, recordings: list[dict[str, Any]], config: Config
-    ) -> Optional[str]:
+    ) -> str | None:
         recording_path = None
         for recording in recordings:
             if "path" in recording:
@@ -103,7 +101,7 @@ class SlackNotifier(BaseNotifier):
 
     def _get_upload_url(
         self, filename: str, file_size: int, message: str, config: Config
-    ) -> Optional[dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         headers = {"Authorization": f"Bearer {self.token}"}
         get_url_api = "https://slack.com/api/files.getUploadURLExternal"
 

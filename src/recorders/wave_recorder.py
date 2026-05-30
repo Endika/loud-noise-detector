@@ -1,6 +1,6 @@
 import os
 import wave
-from typing import Any, Optional
+from typing import Any
 
 from src.utils.config import Config
 
@@ -10,7 +10,7 @@ from .base import BaseRecorder
 class WaveRecorder(BaseRecorder):
     def __init__(
         self,
-        output_dir: Optional[str] = None,
+        output_dir: str | None = None,
         prefix: str = "loud_",
         temporary: bool = True,
     ):

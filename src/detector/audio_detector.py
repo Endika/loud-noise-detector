@@ -1,6 +1,5 @@
 import time
 from datetime import datetime
-from typing import Optional
 
 import pyaudio
 
@@ -21,8 +20,8 @@ class AudioDetector:
         self.recorders = recorders
         self.notifiers = notifiers
         self._is_running = False
-        self.stream: Optional[pyaudio.Stream] = None
-        self.audio: Optional[pyaudio.PyAudio] = None
+        self.stream: pyaudio.Stream | None = None
+        self.audio: pyaudio.PyAudio | None = None
         self.rms_processor = RMSProcessor(config)
         self.detection_buffer: list[bytes] = []
         self.pre_buffer: list[bytes] = []
