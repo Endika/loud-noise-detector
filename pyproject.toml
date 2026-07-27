@@ -31,7 +31,7 @@ python-dotenv = "^1.2.1"
 pytest = "^8.4.2"
 pytest-cov = "^6.3.0"
 pytest-benchmark = "^5.2.3"
-ruff = "^0.15.14"
+ruff = ">=0.15.14,<0.17.0"
 mypy = "^1.19.1"
 
 [build-system]
