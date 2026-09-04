@@ -1,42 +1,59 @@
-[tool.poetry]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
 name = "loud-noise-detector"
 version = "3.0.0"
 description = "Audio monitoring system that detects and alerts you about important sounds in your home while you're away."
-authors = ["Endika Iglesias <endika2@gmail.com>"]
 readme = "README.md"
+requires-python = ">=3.10,<3.14"
 license = "MIT"
-homepage = "https://github.com/Endika/loud-noise-detector"
-repository = "https://github.com/Endika/loud-noise-detector"
+license-files = ["LICENSE"]
+authors = [{ name = "Endika Iglesias", email = "endika2@gmail.com" }]
 keywords = ["audio", "monitoring", "sound-detection", "pet-care", "baby-monitor"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
 ]
-packages = [{include = "src"}]
-include = ["src/py.typed"]
-exclude = ["src/**/test_*.py"]
+dependencies = [
+    "pyaudio>=0.2.14,<0.3",
+    "pyyaml>=6.0.3,<7",
+    "requests>=2.32.5,<3",
+    "numpy>=2.1,<3",
+    "python-dotenv>=1.2.1,<2",
+]
 
-[tool.poetry.scripts]
+[project.urls]
+Homepage = "https://github.com/Endika/loud-noise-detector"
+Repository = "https://github.com/Endika/loud-noise-detector"
+Issues = "https://github.com/Endika/loud-noise-detector/issues"
+
+[project.scripts]
 loud-noise-detector = "src.main:main"
 
-[tool.poetry.dependencies]
-python = ">=3.10,<4.0"
-pyaudio = "^0.2.14"
-pyyaml = "^6.0.3"
-requests = "^2.32.5"
-numpy = "^2.1"
-python-dotenv = "^1.2.1"
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2,<10.0.0",
+    "pytest-cov>=6.3.0,<7",
+    "pytest-benchmark>=5.2.3,<6",
+    "ruff>=0.15.14,<0.17.0",
+    "mypy>=1.19.1,<2",
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest = ">=8.4.2,<10.0.0"
-pytest-cov = "^6.3.0"
-pytest-benchmark = "^5.2.3"
-ruff = ">=0.15.14,<0.17.0"
-mypy = "^1.19.1"
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+exclude = ["**/test_*.py"]
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.hatch.build.targets.sdist]
+include = ["src", "README.md", "LICENSE"]
+exclude = ["**/test_*.py"]
 
 [tool.ruff]
 target-version = "py310"
