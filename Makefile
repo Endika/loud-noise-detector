@@ -1,36 +1,36 @@
-POETRY = poetry
+UV ?= uv
 SRC_DIR = src
 OUTPUT_DIR = data/recordings
 
 .PHONY: install
 install:
-	$(POETRY) install --only main
+	$(UV) sync --no-dev
 
 .PHONY: develop
 develop:
-	$(POETRY) install
+	$(UV) sync --all-groups
 
 .PHONY: test
 test:
-	$(POETRY) run pytest --cov=$(SRC_DIR)
+	$(UV) run pytest --cov=$(SRC_DIR)
 
 .PHONY: quality
 quality: lint format
 
 .PHONY: lint
 lint:
-	$(POETRY) run ruff check $(SRC_DIR)
-	$(POETRY) run mypy $(SRC_DIR)
+	$(UV) run ruff check $(SRC_DIR)
+	$(UV) run mypy $(SRC_DIR)
 
 .PHONY: format
 format:
-	$(POETRY) run ruff check --fix $(SRC_DIR)
-	$(POETRY) run ruff format $(SRC_DIR)
+	$(UV) run ruff check --fix $(SRC_DIR)
+	$(UV) run ruff format $(SRC_DIR)
 
 .PHONY: check-format
 check-format:
-	$(POETRY) run ruff check $(SRC_DIR)
-	$(POETRY) run ruff format --check $(SRC_DIR)
+	$(UV) run ruff check $(SRC_DIR)
+	$(UV) run ruff format --check $(SRC_DIR)
 
 .PHONY: clean
 clean:
@@ -43,7 +43,7 @@ clean:
 .PHONY: run
 run:
 	@echo "Running noise detector..."
-	$(POETRY) run python -m src.main
+	$(UV) run python -m src.main
 
 .PHONY: help
 help:
