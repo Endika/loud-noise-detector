@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.1.0](https://github.com/Endika/loud-noise-detector/compare/v3.0.0...v3.1.0) (2026-09-16)
+
+
+### Features
+
+* **ci:** add CodeQL static analysis ([d12f33d](https://github.com/Endika/loud-noise-detector/commit/d12f33d292ffc69d83c75b2a86a0c216c4f432fe))
+* **ci:** block PRs that introduce high-severity dependency advisories ([f487270](https://github.com/Endika/loud-noise-detector/commit/f4872708e577c19c383a70a9a4c74022e40ce840))
+
 ## [3.0.0](https://github.com/Endika/loud-noise-detector/compare/v2.1.0...v3.0.0) (2026-05-30)
 
 
