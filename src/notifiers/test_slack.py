@@ -12,6 +12,9 @@ TEST_RECORDING = {"path": "/tmp/test_recording.wav", "format": "wav"}
 TEST_RECORDINGS = [TEST_RECORDING]
 TEST_TIMESTAMP = "timestamp"
 TEST_THRESHOLD = 0.5
+GET_UPLOAD_URL_API = "https://slack.com/api/files.getUploadURLExternal"
+COMPLETE_UPLOAD_API = "https://slack.com/api/files.completeUploadExternal"
+TEST_UPLOAD_URL = "https://slack-upload.example.com"
 
 
 class TestSlackNotifier:
@@ -59,7 +62,7 @@ class TestSlackNotifier:
         mock_url_response = MagicMock()
         mock_url_response.json.return_value = {
             "ok": True,
-            "upload_url": "https://slack-upload.example.com",
+            "upload_url": TEST_UPLOAD_URL,
             "file_id": "F12345678",
         }
 
@@ -70,13 +73,13 @@ class TestSlackNotifier:
         mock_complete_response.json.return_value = {"ok": True}
 
         def mock_post_side_effect(url: str, **kwargs: Any) -> MagicMock:
-            if "getUploadURLExternal" in url:
+            if url == GET_UPLOAD_URL_API:
                 return mock_url_response
-            elif "slack-upload.example.com" in url:
+            if url == TEST_UPLOAD_URL:
                 return mock_upload_response
-            elif "completeUploadExternal" in url:
+            if url == COMPLETE_UPLOAD_API:
                 return mock_complete_response
-            return MagicMock()
+            raise AssertionError(f"unexpected POST to {url}")
 
         mock_post = MagicMock()
         mock_post.side_effect = mock_post_side_effect
@@ -178,7 +181,7 @@ class TestSlackNotifier:
         url_response.json.return_value = (
             {
                 "ok": True,
-                "upload_url": "https://example.com",
+                "upload_url": TEST_UPLOAD_URL,
                 "file_id": "F12345",
             }
             if stage != "url"
@@ -194,13 +197,13 @@ class TestSlackNotifier:
         )
 
         def mock_post_side_effect(url: str, **kwargs: Any) -> MagicMock:
-            if "getUploadURLExternal" in url:
+            if url == GET_UPLOAD_URL_API:
                 return url_response
-            elif "example.com" in url:
+            if url == TEST_UPLOAD_URL:
                 return upload_response
-            elif "completeUploadExternal" in url:
+            if url == COMPLETE_UPLOAD_API:
                 return complete_response
-            return MagicMock()
+            raise AssertionError(f"unexpected POST to {url}")
 
         with patch("requests.post", side_effect=mock_post_side_effect):
             result = notifier.notify(
