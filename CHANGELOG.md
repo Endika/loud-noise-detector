@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.1.1](https://github.com/Endika/loud-noise-detector/compare/v3.1.0...v3.1.1) (2026-09-17)
+
+
+### Bug Fixes
+
+* **mypy:** drop the python_version pin that broke on numpy stubs ([5917196](https://github.com/Endika/loud-noise-detector/commit/591719668310bec344dcb5311151da34d909aaf8))
+* **tests:** give BenchmarkFixture protocols a statement body ([4f36d07](https://github.com/Endika/loud-noise-detector/commit/4f36d07529a52b579e530afee705c489b921f494))
+
 ## [3.1.0](https://github.com/Endika/loud-noise-detector/compare/v3.0.0...v3.1.0) (2026-09-16)
 
 
