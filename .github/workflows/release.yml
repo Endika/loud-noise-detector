@@ -28,6 +28,17 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
+      # Enable native auto-merge and stop; GitHub rebase-merges once the required
+      # checks pass, and that PAT-authored merge is a push to main that re-triggers
+      # this workflow to cut the tag and publish. Without this the release PR waits
+      # for a human: it sat open for two and a half hours on 3.1.1.
+      - if: ${{ steps.release.outputs.pr }}
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_JSON: ${{ steps.release.outputs.pr }}
+        run: gh pr merge --rebase --auto -R "$REPO" "$(echo "$PR_JSON" | jq -r .number)"
+
   publish:
     needs: release-please
     if: needs.release-please.outputs.release_created == 'true'
