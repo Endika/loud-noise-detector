@@ -34,7 +34,8 @@ def config() -> Config:
 
 
 class BenchmarkFixture(Protocol):
-    def __call__(self, func: Callable[[], None]) -> None: ...
+    def __call__(self, func: Callable[[], None]) -> None:
+        pass
 
 
 @pytest.fixture
