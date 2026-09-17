@@ -13,7 +13,8 @@ from src.utils.config import Config
 class BenchmarkFixture(Protocol):
     def __call__(
         self, func: Callable[[], float], *args: Any, **kwargs: Any
-    ) -> float: ...
+    ) -> float:
+        pass
 
     extra_info: dict[str, str]
 

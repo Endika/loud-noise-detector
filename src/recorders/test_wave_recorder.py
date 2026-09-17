@@ -166,7 +166,8 @@ class TestWaveRecorder:
 class BenchmarkFixture(Protocol):
     def __call__(
         self, func: Callable[[], Any], *args: Any, **kwargs: Any
-    ) -> Any: ...
+    ) -> Any:
+        pass
 
 
 class TestWaveRecorderBenchmarks:
