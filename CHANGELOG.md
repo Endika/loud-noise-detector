@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.3](https://github.com/Endika/loud-noise-detector/compare/v3.1.2...v3.1.3) (2026-09-27)
+
+
+### Bug Fixes
+
+* let the Slack channel come from .env instead of a placeholder ([20c4d00](https://github.com/Endika/loud-noise-detector/commit/20c4d00e08737fc02c45ea8b62a6f43bd32e7d2e))
+
 ## [3.1.2](https://github.com/Endika/loud-noise-detector/compare/v3.1.1...v3.1.2) (2026-09-27)
 
 
