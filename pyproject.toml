@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "loud-noise-detector"
-version = "3.1.1"
+version = "3.1.2"
 description = "Audio monitoring system that detects and alerts you about loud sounds in your home while you're away."
 readme = "README.md"
 requires-python = ">=3.10,<3.14"

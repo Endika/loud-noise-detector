@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.2](https://github.com/Endika/loud-noise-detector/compare/v3.1.1...v3.1.2) (2026-09-27)
+
+
+### Documentation
+
+* correct Python range, install steps, flags and Slack config in README ([1853dab](https://github.com/Endika/loud-noise-detector/commit/1853dab4f8c35f21707fa48bd75765d694e6bdb9))
+
 ## [3.1.1](https://github.com/Endika/loud-noise-detector/compare/v3.1.0...v3.1.1) (2026-09-17)
 
 
