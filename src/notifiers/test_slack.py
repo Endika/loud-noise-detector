@@ -270,6 +270,20 @@ class TestSlackNotifier:
         assert notifier.token == expected_token
         assert notifier.channel == expected_channel
 
+    def test_the_shipped_default_config_leaves_the_channel_to_the_env(
+        self,
+    ) -> None:
+        config = Config("config/default_config.yaml")
+        with patch.dict(
+            os.environ,
+            {"SLACK_TOKEN": "env_token", "SLACK_CHANNEL": "env_channel"},
+            clear=True,
+        ):
+            notifier = SlackNotifier.create_if_configured(config)
+
+        assert notifier is not None
+        assert notifier.channel == "env_channel"
+
     def test_notify_no_recordings(
         self,
         notifier: SlackNotifier,
