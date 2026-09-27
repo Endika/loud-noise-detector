@@ -8,9 +8,6 @@ updates:
     labels:
       - "dependencies"
       - "automerge"
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
     groups:
       patch-and-minor:
         update-types:
