@@ -18,7 +18,8 @@ timestamp_format: "%Y%m%d_%H%M%S"
 language: "en"
 keep_files: true
 
-# Notifier settings
-notifier_options:
-  slack:
-    channel: "CHANNEL-ID-HERE" 
+# Notifier settings. Slack reads SLACK_TOKEN and SLACK_CHANNEL from .env.
+# To set them here instead, uncomment and fill in (this file wins over .env):
+# notifier_options:
+#   slack:
+#     channel: "C0123456789"
