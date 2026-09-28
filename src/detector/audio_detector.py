@@ -145,9 +145,19 @@ class AudioDetector:
             recordings.append(recording)
 
         for notifier in self.notifiers:
-            if notifier.notify(
-                recordings, timestamp, normalized_rms, self.config
-            ):
+            try:
+                sent = notifier.notify(
+                    recordings, timestamp, normalized_rms, self.config
+                )
+            except Exception as e:
+                error_text = self.config.get_localized_text(
+                    "error_sending_notification"
+                )
+                self.config.logger.error(
+                    f"{error_text} ({type(notifier).__name__}): {e}"
+                )
+                continue
+            if sent:
                 self.config.logger.info(
                     self.config.get_localized_text("notification_sent")
                 )
