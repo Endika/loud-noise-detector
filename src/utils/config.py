@@ -23,6 +23,7 @@ class Config:
         self.language = "en"
         self.notifier_options: dict[str, Any] = {}
         self.logger: logging.Logger = logging.getLogger("loud_noise_detector")
+        self._translations: dict[str, dict[str, Any]] = {}
 
         # Load configuration from file if provided
         if config_file and os.path.exists(config_file):
@@ -52,18 +53,24 @@ class Config:
             )
 
     def get_localized_text(self, key: str) -> str:
+        translations = self._translations.get(self.language)
+        if translations is None:
+            translations = self._read_translations()
+            self._translations[self.language] = translations
+        return str(translations.get(key, key))
+
+    def _read_translations(self) -> dict[str, Any]:
+        translations_file = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "localization",
+            "translations",
+            f"{self.language}.json",
+        )
         try:
-            translations_file = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                "localization",
-                "translations",
-                f"{self.language}.json",
-            )
-
             with open(translations_file, encoding="utf-8") as f:
-                translations = json.load(f)
-
-            return str(translations.get(key, key))
+                return dict(json.load(f))
         except Exception as e:
-            self.logger.error(f"Translation error for key '{key}': {e}")
-            return key
+            self.logger.error(
+                f"Could not load translations for '{self.language}': {e}"
+            )
+            return {}
