@@ -7,6 +7,7 @@
     "recording_saved": "Grabación guardada",
     "notification_sent": "Notificación enviada con éxito",
     "error_sending_notification": "Error al enviar la notificación",
+    "recording_kept": "Ninguna notificación llegó; grabación conservada",
     "threshold_value": "Valor de umbral",
     "temp_file_removed": "Archivo temporal eliminado"
 } 
