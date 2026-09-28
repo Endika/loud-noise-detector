@@ -58,7 +58,7 @@ make develop   # uv sync --all-groups
 | `--verbose`, `-v`    | `False`                      | Enable verbose output                |
 | `--output-dir`, `-o` | `data/recordings`            | Directory to save recordings         |
 | `--threshold`, `-t`  | -                            | RMS threshold to trigger detection   |
-| `--language`, `-l`   | `en`                         | Language for messages (`en` or `es`) |
+| `--language`, `-l`   | -                            | Language for messages (`en` or `es`) |
 | `--no-keep-files`    | `False`                      | Delete recording files after sending |
 
 ### Configuration File Options

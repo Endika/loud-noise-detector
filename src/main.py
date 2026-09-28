@@ -44,7 +44,6 @@ def parse_arguments() -> argparse.Namespace:
         "-l",
         type=str,
         choices=["en", "es"],
-        default="en",
         help="Language for messages",
     )
     parser.add_argument(
@@ -56,17 +55,21 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main() -> int:
-    args = parse_arguments()
-
+def load_config(args: argparse.Namespace) -> Config:
     config = Config(args.config)
     config.verbose = args.verbose or config.verbose
-    config.language = args.language or config.language
+    if args.language is not None:
+        config.language = args.language
     if args.delete_files:
         config.keep_files = False
-
-    if args.threshold:
+    if args.threshold is not None:
         config.threshold = args.threshold
+    return config
+
+
+def main() -> int:
+    args = parse_arguments()
+    config = load_config(args)
 
     logger = setup_logger(config.verbose)
     config.logger = logger

@@ -1,11 +1,13 @@
 import os
 from collections.abc import Generator
+from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.main import main, parse_arguments
+from src.main import load_config, main, parse_arguments
+from src.utils.config import Config
 
 
 class TestArgumentParsing:
@@ -16,7 +18,7 @@ class TestArgumentParsing:
             assert args.verbose is False
             assert args.output_dir == "data/recordings"
             assert args.threshold is None
-            assert args.language == "en"
+            assert args.language is None
             assert args.delete_files is False
 
     def test_parse_arguments_custom(self) -> None:
@@ -41,6 +43,40 @@ class TestArgumentParsing:
             assert args.threshold == 0.3
             assert args.language == "es"
             assert args.delete_files is True
+
+
+class TestLoadConfig:
+    @pytest.fixture
+    def config_file(self, tmp_path: Path) -> str:
+        path = tmp_path / "config.yaml"
+        path.write_text("language: es\nthreshold: 0.2\n")
+        return str(path)
+
+    def _load(self, *argv: str) -> Config:
+        with patch("sys.argv", ["main.py", *argv]):
+            return load_config(parse_arguments())
+
+    def test_config_file_language_is_used(self, config_file: str) -> None:
+        assert self._load("--config", config_file).language == "es"
+
+    def test_language_flag_wins_over_config_file(
+        self, config_file: str
+    ) -> None:
+        config = self._load("--config", config_file, "--language", "en")
+        assert config.language == "en"
+
+    def test_language_defaults_without_flag_or_file(
+        self, tmp_path: Path
+    ) -> None:
+        missing = str(tmp_path / "missing.yaml")
+        assert self._load("--config", missing).language == "en"
+
+    def test_threshold_flag_wins_over_config_file(
+        self, config_file: str
+    ) -> None:
+        assert self._load("--config", config_file).threshold == 0.2
+        config = self._load("--config", config_file, "--threshold", "0")
+        assert config.threshold == 0.0
 
 
 class TestMainFunction:
