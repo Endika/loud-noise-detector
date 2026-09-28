@@ -7,6 +7,8 @@ from src.utils.config import Config
 
 from .base import BaseNotifier
 
+REQUEST_TIMEOUT_SECONDS = 30
+
 
 class SlackNotifier(BaseNotifier):
     @classmethod
@@ -113,7 +115,10 @@ class SlackNotifier(BaseNotifier):
         }
 
         url_response = requests.post(
-            get_url_api, headers=headers, data=url_params
+            get_url_api,
+            headers=headers,
+            data=url_params,
+            timeout=REQUEST_TIMEOUT_SECONDS,
         )
         url_result = url_response.json()
 
@@ -134,7 +139,11 @@ class SlackNotifier(BaseNotifier):
     ) -> bool:
         with open(file_path, "rb") as f:
             file_content = f.read()
-            upload_response = requests.post(upload_url, data=file_content)
+            upload_response = requests.post(
+                upload_url,
+                data=file_content,
+                timeout=REQUEST_TIMEOUT_SECONDS,
+            )
 
         if upload_response.status_code != 200:
             config.logger.error(
@@ -157,7 +166,10 @@ class SlackNotifier(BaseNotifier):
         }
 
         complete_response = requests.post(
-            complete_api, headers=headers, json=complete_params
+            complete_api,
+            headers=headers,
+            json=complete_params,
+            timeout=REQUEST_TIMEOUT_SECONDS,
         )
         complete_result = complete_response.json()
 
