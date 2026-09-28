@@ -154,6 +154,32 @@ class TestConfig:
 
         assert config.get_localized_text(key) == expected
 
+    def test_get_localized_text_reads_each_language_once(
+        self, monkeypatch: MonkeyPatch
+    ) -> None:
+        config = Config()
+        config.language = "es"
+        assert config.get_localized_text("listening") == (
+            "Escuchando ruidos fuertes..."
+        )
+        config.language = "en"
+        assert config.get_localized_text("listening") == (
+            "Listening for loud noises..."
+        )
+
+        def unreadable(*args: Any, **kwargs: Any) -> Any:
+            raise OSError("translations re-read")
+
+        monkeypatch.setattr("builtins.open", unreadable)
+
+        assert config.get_localized_text("stopping") == (
+            "Stopping audio detection"
+        )
+        config.language = "es"
+        assert config.get_localized_text("stopping") == (
+            "Deteniendo la detección de audio"
+        )
+
     @pytest.mark.parametrize(
         "attribute,value",
         [
