@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.1.4](https://github.com/Endika/loud-noise-detector/compare/v3.1.3...v3.1.4) (2026-09-28)
+
+
+### Bug Fixes
+
+* let the config file language apply unless --language is given ([cfb3e6f](https://github.com/Endika/loud-noise-detector/commit/cfb3e6f01813d6e188988396c1aad305b0ce8189))
+
+
+### Performance Improvements
+
+* read each translation file once instead of on every message ([1d9b5f0](https://github.com/Endika/loud-noise-detector/commit/1d9b5f04afde12c0b1b1e18eb988af7eba786261))
+
 ## [3.1.3](https://github.com/Endika/loud-noise-detector/compare/v3.1.2...v3.1.3) (2026-09-27)
 
 
