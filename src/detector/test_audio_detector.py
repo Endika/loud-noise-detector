@@ -437,31 +437,17 @@ class TestAudioDetectorErrorHandling:
             assert detector.detection_buffer[0] == b"\x01" * 1024
             assert detector.detection_buffer[1] == b"\x03" * 1024
 
-    def test_notifier_exception_handling(
+    def test_notifier_exception_propagates(
         self,
         detector: AudioDetector,
-        recorders: list[BaseRecorder],
         notifiers: list[BaseNotifier],
     ) -> None:
         detector.detection_buffer = [b"\x00" * 1024]
+        notify_mock = MagicMock(side_effect=Exception("Notifier failed"))
 
-        save_mock = MagicMock(spec=MagicMock)
-        save_mock.return_value = {
-            "path": "/tmp/test.wav",
-            "temporary": True,
-        }
-        notify_mock = MagicMock(spec=MagicMock)
-        notify_mock.side_effect = Exception("Notifier failed")
-
-        with patch.object(recorders[0], "save", save_mock):
-            with patch.object(notifiers[0], "notify", notify_mock):
-                with patch.object(
-                    detector.config.logger, "error"
-                ) as mock_error:
-                    with contextlib.suppress(Exception):
-                        detector._save_and_notify(0.3, "timestamp")
-
-                    assert mock_error.call_count >= 0
+        with patch.object(notifiers[0], "notify", notify_mock):
+            with pytest.raises(Exception, match="Notifier failed"):
+                detector._save_and_notify(0.3, "timestamp")
 
     def test_file_removal_failure(
         self,
