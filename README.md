@@ -52,14 +52,14 @@ make develop   # uv sync --all-groups
 
 ### Command Line Arguments
 
-| Argument             | Default Value                | Description                          |
-| -------------------- | ---------------------------- | ------------------------------------ |
-| `--config`           | `config/default_config.yaml` | Path to configuration file           |
-| `--verbose`, `-v`    | `False`                      | Enable verbose output                |
-| `--output-dir`, `-o` | `data/recordings`            | Directory to save recordings         |
-| `--threshold`, `-t`  | -                            | RMS threshold to trigger detection   |
-| `--language`, `-l`   | -                            | Language for messages (`en` or `es`) |
-| `--no-keep-files`    | `False`                      | Delete recording files after sending |
+| Argument             | Default Value                | Description                                                   |
+| -------------------- | ---------------------------- | ------------------------------------------------------------- |
+| `--config`           | `config/default_config.yaml` | Path to configuration file                                    |
+| `--verbose`, `-v`    | `False`                      | Enable verbose output                                         |
+| `--output-dir`, `-o` | `data/recordings`            | Directory to save recordings                                  |
+| `--threshold`, `-t`  | -                            | RMS threshold to trigger detection                            |
+| `--language`, `-l`   | -                            | Language for messages (`en` or `es`)                          |
+| `--no-keep-files`    | `False`                      | Delete recordings after sending; kept if no notifier delivers |
 
 ### Configuration File Options
 

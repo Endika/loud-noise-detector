@@ -144,6 +144,7 @@ class AudioDetector:
             )
             recordings.append(recording)
 
+        delivered = False
         for notifier in self.notifiers:
             try:
                 sent = notifier.notify(
@@ -158,15 +159,23 @@ class AudioDetector:
                 )
                 continue
             if sent:
+                delivered = True
                 self.config.logger.info(
                     self.config.get_localized_text("notification_sent")
                 )
 
-        if not self.config.keep_files:
-            for recording in recordings:
-                if recording["temporary"] and recording["path"]:
-                    for recorder in self.recorders:
-                        if recorder.remove_file(
-                            recording["path"], self.config
-                        ):  # noqa: E501
-                            break
+        if self.config.keep_files:
+            return
+
+        for recording in recordings:
+            if not (recording["temporary"] and recording["path"]):
+                continue
+            if self.notifiers and not delivered:
+                self.config.logger.warning(
+                    f"{self.config.get_localized_text('recording_kept')}: "
+                    f"{recording['path']}"
+                )
+                continue
+            for recorder in self.recorders:
+                if recorder.remove_file(recording["path"], self.config):
+                    break

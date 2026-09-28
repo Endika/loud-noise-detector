@@ -469,6 +469,64 @@ class TestAudioDetectorErrorHandling:
 
         working.notify.assert_called_once()
 
+    @pytest.mark.parametrize(
+        "outcomes",
+        [[False], [Exception("boom")], [False, Exception("boom")]],
+    )
+    def test_recording_is_kept_when_nothing_was_delivered(
+        self,
+        detector: AudioDetector,
+        recorders: list[BaseRecorder],
+        outcomes: list[bool | Exception],
+    ) -> None:
+        detector.config.keep_files = False
+        detector.detection_buffer = [b"\x00" * 1024]
+        notifiers: list[BaseNotifier] = []
+        for outcome in outcomes:
+            notifier = MagicMock(spec=BaseNotifier)
+            notifier.notify = MagicMock(side_effect=[outcome])
+            notifiers.append(notifier)
+        detector.notifiers = notifiers
+
+        detector._save_and_notify(0.3, "timestamp")
+
+        cast(MagicMock, recorders[0].remove_file).assert_not_called()
+        warning_mock = cast(MagicMock, detector.config.logger.warning)
+        warning_mock.assert_called_once()
+        assert "/tmp/test.wav" in warning_mock.call_args[0][0]
+
+    def test_recording_is_removed_when_one_notifier_delivered(
+        self,
+        detector: AudioDetector,
+        recorders: list[BaseRecorder],
+    ) -> None:
+        detector.config.keep_files = False
+        detector.detection_buffer = [b"\x00" * 1024]
+        failing = MagicMock(spec=BaseNotifier)
+        failing.notify = MagicMock(side_effect=Exception("boom"))
+        working = MagicMock(spec=BaseNotifier)
+        working.notify = MagicMock(return_value=True)
+        detector.notifiers = [failing, working]
+
+        detector._save_and_notify(0.3, "timestamp")
+
+        cast(MagicMock, recorders[0].remove_file).assert_called_once_with(
+            "/tmp/test.wav", detector.config
+        )
+
+    def test_recording_is_removed_when_no_notifier_is_configured(
+        self,
+        detector: AudioDetector,
+        recorders: list[BaseRecorder],
+    ) -> None:
+        detector.config.keep_files = False
+        detector.detection_buffer = [b"\x00" * 1024]
+        detector.notifiers = []
+
+        detector._save_and_notify(0.3, "timestamp")
+
+        cast(MagicMock, recorders[0].remove_file).assert_called_once()
+
     def test_file_removal_failure(
         self,
         detector: AudioDetector,

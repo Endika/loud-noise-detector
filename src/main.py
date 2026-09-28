@@ -50,7 +50,10 @@ def parse_arguments() -> argparse.Namespace:
         "--no-keep-files",
         action="store_true",
         dest="delete_files",
-        help="Delete recording files after sending (don't keep them)",
+        help=(
+            "Delete recording files after sending; they are kept if no "
+            "notifier delivers them"
+        ),
     )
     return parser.parse_args()
 
