@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.notifiers.slack import SlackNotifier
+from src.notifiers.slack import REQUEST_TIMEOUT_SECONDS, SlackNotifier
 from src.utils.config import Config
 
 TEST_RECORDING = {"path": "/tmp/test_recording.wav", "format": "wav"}
@@ -156,6 +156,23 @@ class TestSlackNotifier:
             if "completeUploadExternal" in call[0][0]
         ]
         assert len(complete_calls) == 1
+
+    def test_every_slack_request_has_a_timeout(
+        self,
+        notifier: SlackNotifier,
+        config: Config,
+        mock_successful_slack_upload: dict[str, MagicMock],
+        env_with_slack_config: Generator[None, None, None],
+        mock_file_size: Generator[None, None, None],
+    ) -> None:
+        notifier.notify(
+            TEST_RECORDINGS, TEST_TIMESTAMP, TEST_THRESHOLD, config
+        )
+
+        calls = mock_successful_slack_upload["post"].call_args_list
+        assert len(calls) == 3
+        for call in calls:
+            assert call.kwargs["timeout"] == REQUEST_TIMEOUT_SECONDS
 
     @pytest.mark.parametrize(
         "stage,response_data,expected_result",
