@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.1.5](https://github.com/Endika/loud-noise-detector/compare/v3.1.4...v3.1.5) (2026-09-28)
+
+
+### Bug Fixes
+
+* keep listening when a notifier fails ([46fdb9d](https://github.com/Endika/loud-noise-detector/commit/46fdb9d5e846ac95522da34504469ac51310bce1))
+* keep the recording when no notification got through ([c1003c2](https://github.com/Endika/loud-noise-detector/commit/c1003c249ce5a493d531a238eeed76aa5904c485))
+* time out Slack requests ([71d939d](https://github.com/Endika/loud-noise-detector/commit/71d939dcd114cb4b6e0897ede1a42dea3e01729d))
+
 ## [3.1.4](https://github.com/Endika/loud-noise-detector/compare/v3.1.3...v3.1.4) (2026-09-28)
 
 
